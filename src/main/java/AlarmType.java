@@ -6,7 +6,7 @@ public enum AlarmType {
     VOLTAGE_HIGH,
 
     RX_POWER_LOW,
-    TX_POWER_LOW,
 
+    LASER_CURRENT_LOW,
     LASER_CURRENT_HIGH
 }

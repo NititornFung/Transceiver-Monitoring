@@ -5,9 +5,9 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // =================================
-        // Create Transceiver
-        // =================================
+        // =========================================
+        // Create Transceivers
+        // =========================================
 
         Transceiver tx001 =
                 new Transceiver(
@@ -28,9 +28,9 @@ public class Main {
                 );
 
 
-        // =================================
-        // Services
-        // =================================
+        // =========================================
+        // Create Services
+        // =========================================
 
         TelemetrySimulator simulator =
                 new TelemetrySimulator();
@@ -41,13 +41,29 @@ public class Main {
         MonitoringHistoryService historyService =
                 new MonitoringHistoryService();
 
+        AlarmHistoryService alarmHistoryService =
+                new AlarmHistoryService();
+
         InputHandler inputHandler =
                 new InputHandler();
 
 
-        // =================================
+        // =========================================
+        // Create Test Mode
+        // =========================================
+
+        TestMode testMode =
+                new TestMode(
+                        monitoringService,
+                        historyService,
+                        alarmHistoryService,
+                        inputHandler
+                );
+
+
+        // =========================================
         // Module List
-        // =================================
+        // =========================================
 
         List<Transceiver> modules =
                 new ArrayList<>();
@@ -57,36 +73,39 @@ public class Main {
         modules.add(tx003);
 
 
-        // =================================
-        // Start Input Listener
-        // =================================
+        // =========================================
+        // Start Input Handler
+        // =========================================
 
         inputHandler.start();
 
 
-        // =================================
-        // Program Running
-        // =================================
+        // =========================================
+        // Main Program
+        // =========================================
 
         boolean running = true;
 
 
         while (running) {
 
-            // =================================
+            // =====================================
             // Check User Command
-            // =================================
+            // =====================================
 
             String command =
                     inputHandler.getCommand();
 
 
-            // =================================
-            // H = History
-            // =================================
+            // =====================================
+            // H = History / Test Center
+            // =====================================
 
             if (command != null
-                    && command.equals("H")) {
+                    && command.equalsIgnoreCase("H")) {
+
+                boolean menuRunning = true;
+
 
                 System.out.println();
 
@@ -99,31 +118,56 @@ public class Main {
                 );
 
                 System.out.println(
-                        "       HISTORY MENU"
-                );
-
-                System.out.println(
                         "========================================"
                 );
 
 
-                boolean historyMenu = true;
-
-
-                while (historyMenu) {
+                while (menuRunning) {
 
                     System.out.println();
 
                     System.out.println(
-                            "[1] TX001 - 400G COSA"
+                            "========================================"
                     );
 
                     System.out.println(
-                            "[2] TX002 - 800G COSAz"
+                            "       HISTORY / TEST CENTER"
                     );
 
                     System.out.println(
-                            "[3] TX003 - 800G SR8"
+                            "========================================"
+                    );
+
+                    System.out.println(
+                            "[1] TX001 Monitoring History"
+                    );
+
+                    System.out.println(
+                            "[2] TX002 Monitoring History"
+                    );
+
+                    System.out.println(
+                            "[3] TX003 Monitoring History"
+                    );
+
+                    System.out.println();
+
+                    System.out.println(
+                            "[4] TX001 Alarm History"
+                    );
+
+                    System.out.println(
+                            "[5] TX002 Alarm History"
+                    );
+
+                    System.out.println(
+                            "[6] TX003 Alarm History"
+                    );
+
+                    System.out.println();
+
+                    System.out.println(
+                            "[7] TEST MODE"
                     );
 
                     System.out.println();
@@ -136,21 +180,24 @@ public class Main {
                             "[Q] Quit Program"
                     );
 
+                    System.out.println(
+                            "========================================"
+                    );
+
                     System.out.print(
                             "Select : "
                     );
 
 
-                    String historyCommand;
-
-
                     // =================================
-                    // Wait for Command
+                    // Wait for User Input
                     // =================================
+
+                    String menuCommand;
 
                     do {
 
-                        historyCommand =
+                        menuCommand =
                                 inputHandler.getCommand();
 
                         try {
@@ -165,38 +212,28 @@ public class Main {
                             return;
                         }
 
-                    } while (historyCommand == null);
+                    } while (menuCommand == null);
 
 
                     // =================================
-                    // TX001
+                    // Monitoring History
                     // =================================
 
-                    if (historyCommand.equals("1")) {
+                    if (menuCommand.equals("1")) {
 
                         historyService.printHistory(
                                 tx001
                         );
                     }
 
-
-                    // =================================
-                    // TX002
-                    // =================================
-
-                    else if (historyCommand.equals("2")) {
+                    else if (menuCommand.equals("2")) {
 
                         historyService.printHistory(
                                 tx002
                         );
                     }
 
-
-                    // =================================
-                    // TX003
-                    // =================================
-
-                    else if (historyCommand.equals("3")) {
+                    else if (menuCommand.equals("3")) {
 
                         historyService.printHistory(
                                 tx003
@@ -205,12 +242,69 @@ public class Main {
 
 
                     // =================================
-                    // Continue
+                    // Alarm History
                     // =================================
 
-                    else if (historyCommand.equals("0")) {
+                    else if (menuCommand.equals("4")) {
 
-                        historyMenu = false;
+                        alarmMenu(
+                                tx001,
+                                alarmHistoryService,
+                                inputHandler
+                        );
+                    }
+
+                    else if (menuCommand.equals("5")) {
+
+                        alarmMenu(
+                                tx002,
+                                alarmHistoryService,
+                                inputHandler
+                        );
+                    }
+
+                    else if (menuCommand.equals("6")) {
+
+                        alarmMenu(
+                                tx003,
+                                alarmHistoryService,
+                                inputHandler
+                        );
+                    }
+
+
+                    // =================================
+                    // TEST MODE
+                    // =================================
+
+                    else if (menuCommand.equals("7")) {
+
+                        Transceiver selectedModule =
+                                selectModule(
+                                        tx001,
+                                        tx002,
+                                        tx003,
+                                        inputHandler
+                                );
+
+
+                        if (selectedModule != null) {
+
+                            testMode.open(
+                                    selectedModule
+                            );
+                        }
+                    }
+
+
+                    // =================================
+                    // Continue Monitoring
+                    // =================================
+
+                    else if (menuCommand.equals("0")) {
+
+                        menuRunning = false;
+
 
                         System.out.println();
 
@@ -232,11 +326,13 @@ public class Main {
                     // Quit
                     // =================================
 
-                    else if (historyCommand.equals("Q")) {
+                    else if (
+                            menuCommand.equalsIgnoreCase("Q")
+                    ) {
 
                         running = false;
 
-                        historyMenu = false;
+                        menuRunning = false;
                     }
 
 
@@ -246,22 +342,25 @@ public class Main {
 
                     else {
 
+                        System.out.println();
+
                         System.out.println(
                                 "Invalid command."
                         );
                     }
                 }
 
+
                 continue;
             }
 
 
-            // =================================
+            // =====================================
             // Q = Quit
-            // =================================
+            // =====================================
 
             if (command != null
-                    && command.equals("Q")) {
+                    && command.equalsIgnoreCase("Q")) {
 
                 running = false;
 
@@ -269,9 +368,9 @@ public class Main {
             }
 
 
-            // =================================
+            // =====================================
             // Monitoring Header
-            // =================================
+            // =====================================
 
             System.out.println();
 
@@ -287,22 +386,10 @@ public class Main {
                     "========================================"
             );
 
-            System.out.println(
-                    "[H] History"
-            );
 
-            System.out.println(
-                    "[Q] Quit"
-            );
-
-            System.out.println(
-                    "========================================"
-            );
-
-
-            // =================================
+            // =====================================
             // Update Telemetry
-            // =================================
+            // =====================================
 
             for (Transceiver module : modules) {
 
@@ -311,17 +398,22 @@ public class Main {
                                 module.getModel()
                         );
 
+
                 module.updateTelemetry(
                         telemetry
                 );
             }
 
 
-            // =================================
-            // Monitoring
-            // =================================
+            // =====================================
+            // Monitor Every Module
+            // =====================================
 
             for (Transceiver module : modules) {
+
+                // =================================
+                // Generate Monitoring Report
+                // =================================
 
                 MonitoringReport report =
                         monitoringService.monitor(
@@ -330,12 +422,22 @@ public class Main {
 
 
                 // =================================
-                // Save History
+                // Save Monitoring History
                 // =================================
 
                 historyService.addHistory(
                         module,
                         report.getStatus()
+                );
+
+
+                // =================================
+                // Process Alarm History
+                // =================================
+
+                alarmHistoryService.processAlarms(
+                        module,
+                        report.getAlarms()
                 );
 
 
@@ -435,6 +537,8 @@ public class Main {
 
                     for (Alarm alarm : alarms) {
 
+                        System.out.println();
+
                         System.out.println(
                                 "⚠ Alarm Type : "
                                         + alarm.getType()
@@ -464,9 +568,32 @@ public class Main {
             }
 
 
-            // =================================
+            // =====================================
+            // Command Hint
+            // =====================================
+
+            System.out.println();
+
+            System.out.println(
+                    "----------------------------------------"
+            );
+
+            System.out.println(
+                    "[H] History / Test"
+            );
+
+            System.out.println(
+                    "[Q] Quit"
+            );
+
+            System.out.println(
+                    "----------------------------------------"
+            );
+
+
+            // =====================================
             // Wait 1 Second
-            // =================================
+            // =====================================
 
             try {
 
@@ -474,23 +601,24 @@ public class Main {
 
             } catch (InterruptedException e) {
 
-                Thread.currentThread().interrupt();
+                Thread.currentThread()
+                        .interrupt();
 
                 break;
             }
         }
 
 
-        // =================================
-        // Stop Input
-        // =================================
+        // =========================================
+        // Stop Input Handler
+        // =========================================
 
         inputHandler.stop();
 
 
-        // =================================
+        // =========================================
         // Program Closed
-        // =================================
+        // =========================================
 
         System.out.println();
 
@@ -509,5 +637,444 @@ public class Main {
         System.out.println(
                 "========================================"
         );
+    }
+
+
+    // =========================================================
+    // Select Module
+    // =========================================================
+
+    private static Transceiver selectModule(
+            Transceiver tx001,
+            Transceiver tx002,
+            Transceiver tx003,
+            InputHandler inputHandler
+    ) {
+
+        while (true) {
+
+            System.out.println();
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.println(
+                    "          SELECT TEST MODULE"
+            );
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.println(
+                    "[1] TX001 - 400G COSA"
+            );
+
+            System.out.println(
+                    "[2] TX002 - 800G COSAz"
+            );
+
+            System.out.println(
+                    "[3] TX003 - 800G SR8"
+            );
+
+            System.out.println();
+
+            System.out.println(
+                    "[0] Back"
+            );
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.print(
+                    "Select : "
+            );
+
+
+            // =================================
+            // Wait Input
+            // =================================
+
+            String command;
+
+            do {
+
+                command =
+                        inputHandler.getCommand();
+
+                try {
+
+                    Thread.sleep(100);
+
+                } catch (InterruptedException e) {
+
+                    Thread.currentThread()
+                            .interrupt();
+
+                    return null;
+                }
+
+            } while (command == null);
+
+
+            // =================================
+            // Select TX001
+            // =================================
+
+            if (command.equals("1")) {
+
+                return tx001;
+            }
+
+
+            // =================================
+            // Select TX002
+            // =================================
+
+            if (command.equals("2")) {
+
+                return tx002;
+            }
+
+
+            // =================================
+            // Select TX003
+            // =================================
+
+            if (command.equals("3")) {
+
+                return tx003;
+            }
+
+
+            // =================================
+            // Back
+            // =================================
+
+            if (command.equals("0")) {
+
+                return null;
+            }
+
+
+            System.out.println();
+
+            System.out.println(
+                    "Invalid command."
+            );
+        }
+    }
+
+
+    // =========================================================
+    // Alarm Menu
+    // =========================================================
+
+    private static void alarmMenu(
+            Transceiver module,
+            AlarmHistoryService alarmHistoryService,
+            InputHandler inputHandler
+    ) {
+
+        boolean menu = true;
+
+
+        while (menu) {
+
+            System.out.println();
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.println(
+                    "             ALARM HISTORY"
+            );
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.println(
+                    "Module : "
+                            + module.getModuleId()
+            );
+
+            System.out.println(
+                    "Model  : "
+                            + module.getModel()
+            );
+
+            System.out.println(
+                    "========================================"
+            );
+
+
+            // =================================
+            // Get Alarm Records
+            // =================================
+
+            List<AlarmRecord> records =
+                    alarmHistoryService
+                            .getAlarmHistory(
+                                    module
+                            );
+
+
+            if (records.isEmpty()) {
+
+                System.out.println(
+                        "No alarm history."
+                );
+
+            } else {
+
+                for (int i = 0;
+                     i < records.size();
+                     i++) {
+
+                    AlarmRecord record =
+                            records.get(i);
+
+
+                    System.out.println();
+
+                    System.out.println(
+                            "[" + (i + 1) + "]"
+                    );
+
+                    System.out.println(
+                            "Time      : "
+                                    + record.getTimestamp()
+                    );
+
+                    System.out.println(
+                            "Type      : "
+                                    + record.getType()
+                    );
+
+                    System.out.println(
+                            "Severity  : "
+                                    + record.getSeverity()
+                    );
+
+                    System.out.println(
+                            "Message   : "
+                                    + record.getMessage()
+                    );
+
+                    System.out.println(
+                            "Actual    : "
+                                    + record.getActualValue()
+                    );
+
+                    System.out.println(
+                            "Threshold : "
+                                    + record.getThreshold()
+                    );
+
+                    System.out.println(
+                            "Status    : "
+                                    + record.getStatus()
+                    );
+
+
+                    if (record.getAcknowledgedTime()
+                            != null) {
+
+                        System.out.println(
+                                "ACK Time  : "
+                                        + record
+                                        .getAcknowledgedTime()
+                        );
+                    }
+
+
+                    if (record.getClearedTime()
+                            != null) {
+
+                        System.out.println(
+                                "Clear Time: "
+                                        + record
+                                        .getClearedTime()
+                        );
+                    }
+
+
+                    System.out.println(
+                            "Duration  : "
+                                    + record
+                                    .getDurationSeconds()
+                                    + " sec"
+                    );
+
+
+                    System.out.println(
+                            "----------------------------------------"
+                    );
+                }
+            }
+
+
+            // =================================
+            // Alarm Menu
+            // =================================
+
+            System.out.println();
+
+            System.out.println(
+                    "[A] Acknowledge Alarm"
+            );
+
+            System.out.println(
+                    "[0] Back"
+            );
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.print(
+                    "Select : "
+            );
+
+
+            String command;
+
+            do {
+
+                command =
+                        inputHandler.getCommand();
+
+                try {
+
+                    Thread.sleep(100);
+
+                } catch (InterruptedException e) {
+
+                    Thread.currentThread()
+                            .interrupt();
+
+                    return;
+                }
+
+            } while (command == null);
+
+
+            // =================================
+            // Acknowledge
+            // =================================
+
+            if (command.equalsIgnoreCase("A")) {
+
+                if (records.isEmpty()) {
+
+                    System.out.println();
+
+                    System.out.println(
+                            "No alarm available."
+                    );
+
+                    continue;
+                }
+
+
+                System.out.print(
+                        "Enter Alarm Number : "
+                );
+
+
+                String numberInput;
+
+                do {
+
+                    numberInput =
+                            inputHandler.getCommand();
+
+                    try {
+
+                        Thread.sleep(100);
+
+                    } catch (InterruptedException e) {
+
+                        Thread.currentThread()
+                                .interrupt();
+
+                        return;
+                    }
+
+                } while (numberInput == null);
+
+
+                try {
+
+                    int alarmNumber =
+                            Integer.parseInt(
+                                    numberInput
+                            );
+
+
+                    boolean success =
+                            alarmHistoryService
+                                    .acknowledgeAlarm(
+                                            module,
+                                            alarmNumber
+                                    );
+
+
+                    if (success) {
+
+                        System.out.println();
+
+                        System.out.println(
+                                "Alarm acknowledged successfully."
+                        );
+
+                    } else {
+
+                        System.out.println();
+
+                        System.out.println(
+                                "Unable to acknowledge alarm."
+                        );
+                    }
+
+                } catch (NumberFormatException e) {
+
+                    System.out.println();
+
+                    System.out.println(
+                            "Please enter a valid number."
+                    );
+                }
+            }
+
+
+            // =================================
+            // Back
+            // =================================
+
+            else if (command.equals("0")) {
+
+                menu = false;
+            }
+
+
+            // =================================
+            // Invalid
+            // =================================
+
+            else {
+
+                System.out.println();
+
+                System.out.println(
+                        "Invalid command."
+                );
+            }
+        }
     }
 }
