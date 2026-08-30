@@ -1,0 +1,12 @@
+public enum AlarmType {
+
+    TEMPERATURE_HIGH,
+
+    VOLTAGE_LOW,
+    VOLTAGE_HIGH,
+
+    RX_POWER_LOW,
+    TX_POWER_LOW,
+
+    LASER_CURRENT_HIGH
+}
