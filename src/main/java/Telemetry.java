@@ -10,9 +10,9 @@ public class Telemetry {
     private double laserCurrent;
 
 
-    // =========================
+    // =================================
     // Constructor
-    // =========================
+    // =================================
 
     public Telemetry(
             double wavelength,
@@ -34,9 +34,9 @@ public class Telemetry {
     }
 
 
-    // =========================
+    // =================================
     // Getter
-    // =========================
+    // =================================
 
     public double getWavelength() {
         return wavelength;
@@ -63,9 +63,9 @@ public class Telemetry {
     }
 
 
-    // =========================
+    // =================================
     // Setter
-    // =========================
+    // =================================
 
     public void setTemperature(double temperature) {
         this.temperature = temperature;

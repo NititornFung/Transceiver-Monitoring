@@ -14,6 +14,9 @@ public class MonitoringService {
 
     private static final double MIN_RX_POWER = -10.0;
 
+    private static final double MIN_LASER_CURRENT = 10.0;
+    private static final double MAX_LASER_CURRENT = 100.0;
+
 
     // =================================
     // Monitor
@@ -32,7 +35,7 @@ public class MonitoringService {
 
 
         // =================================
-        // Temperature Check
+        // Temperature
         // =================================
 
         checkTemperature(
@@ -42,7 +45,7 @@ public class MonitoringService {
 
 
         // =================================
-        // Voltage Check
+        // Voltage
         // =================================
 
         checkVoltage(
@@ -52,7 +55,7 @@ public class MonitoringService {
 
 
         // =================================
-        // RX Power Check
+        // RX Power
         // =================================
 
         checkRxPower(
@@ -62,11 +65,20 @@ public class MonitoringService {
 
 
         // =================================
-        // Determine Status
+        // Laser Current
+        // =================================
+
+        checkLaserCurrent(
+                telemetry,
+                alarms
+        );
+
+
+        // =================================
+        // Status
         // =================================
 
         String status;
-
 
         if (alarms.isEmpty()) {
 
@@ -79,7 +91,7 @@ public class MonitoringService {
 
 
         // =================================
-        // Create Report
+        // Report
         // =================================
 
         return new MonitoringReport(
@@ -91,7 +103,7 @@ public class MonitoringService {
 
 
     // =================================
-    // Temperature
+    // Temperature Check
     // =================================
 
     private void checkTemperature(
@@ -119,7 +131,7 @@ public class MonitoringService {
 
 
     // =================================
-    // Voltage
+    // Voltage Check
     // =================================
 
     private void checkVoltage(
@@ -130,10 +142,6 @@ public class MonitoringService {
         double voltage =
                 telemetry.getVoltage();
 
-
-        // =================================
-        // Voltage LOW
-        // =================================
 
         if (voltage < MIN_VOLTAGE) {
 
@@ -148,10 +156,6 @@ public class MonitoringService {
             );
         }
 
-
-        // =================================
-        // Voltage HIGH
-        // =================================
 
         if (voltage > MAX_VOLTAGE) {
 
@@ -169,7 +173,7 @@ public class MonitoringService {
 
 
     // =================================
-    // RX Power
+    // RX Power Check
     // =================================
 
     private void checkRxPower(
@@ -190,6 +194,56 @@ public class MonitoringService {
                             "RX Power is too low",
                             rxPower,
                             MIN_RX_POWER
+                    )
+            );
+        }
+    }
+
+
+    // =================================
+    // Laser Current Check
+    // =================================
+
+    private void checkLaserCurrent(
+            Telemetry telemetry,
+            List<Alarm> alarms
+    ) {
+
+        double laserCurrent =
+                telemetry.getLaserCurrent();
+
+
+        // =================================
+        // LASER CURRENT LOW
+        // =================================
+
+        if (laserCurrent < MIN_LASER_CURRENT) {
+
+            alarms.add(
+                    new Alarm(
+                            AlarmType.LASER_CURRENT_LOW,
+                            AlarmSeverity.WARNING,
+                            "Laser Current is too low",
+                            laserCurrent,
+                            MIN_LASER_CURRENT
+                    )
+            );
+        }
+
+
+        // =================================
+        // LASER CURRENT HIGH
+        // =================================
+
+        if (laserCurrent > MAX_LASER_CURRENT) {
+
+            alarms.add(
+                    new Alarm(
+                            AlarmType.LASER_CURRENT_HIGH,
+                            AlarmSeverity.WARNING,
+                            "Laser Current is too high",
+                            laserCurrent,
+                            MAX_LASER_CURRENT
                     )
             );
         }

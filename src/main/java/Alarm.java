@@ -7,6 +7,10 @@ public class Alarm {
     private double threshold;
 
 
+    // =================================
+    // Constructor
+    // =================================
+
     public Alarm(
             AlarmType type,
             AlarmSeverity severity,
@@ -23,25 +27,25 @@ public class Alarm {
     }
 
 
+    // =================================
+    // Getter
+    // =================================
+
     public AlarmType getType() {
         return type;
     }
-
 
     public AlarmSeverity getSeverity() {
         return severity;
     }
 
-
     public String getMessage() {
         return message;
     }
 
-
     public double getActualValue() {
         return actualValue;
     }
-
 
     public double getThreshold() {
         return threshold;
