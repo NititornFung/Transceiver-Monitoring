@@ -32,22 +32,31 @@ public class Alarm {
     // =================================
 
     public AlarmType getType() {
+
         return type;
     }
 
+
     public AlarmSeverity getSeverity() {
+
         return severity;
     }
 
+
     public String getMessage() {
+
         return message;
     }
 
+
     public double getActualValue() {
+
         return actualValue;
     }
 
+
     public double getThreshold() {
+
         return threshold;
     }
 }

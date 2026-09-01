@@ -7,6 +7,12 @@ public enum AlarmType {
 
     RX_POWER_LOW,
 
+    TX_POWER_LOW,
+    TX_POWER_HIGH,
+
     LASER_CURRENT_LOW,
-    LASER_CURRENT_HIGH
+    LASER_CURRENT_HIGH,
+
+    WAVELENGTH_LOW,
+    WAVELENGTH_HIGH
 }

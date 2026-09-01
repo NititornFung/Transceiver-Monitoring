@@ -39,26 +39,37 @@ public class Telemetry {
     // =================================
 
     public double getWavelength() {
+
         return wavelength;
     }
 
+
     public double getTemperature() {
+
         return temperature;
     }
 
+
     public double getVoltage() {
+
         return voltage;
     }
 
+
     public double getTxPower() {
+
         return txPower;
     }
 
+
     public double getRxPower() {
+
         return rxPower;
     }
 
+
     public double getLaserCurrent() {
+
         return laserCurrent;
     }
 
@@ -67,27 +78,50 @@ public class Telemetry {
     // Setter
     // =================================
 
-    public void setTemperature(double temperature) {
+    public void setTemperature(
+            double temperature
+    ) {
+
         this.temperature = temperature;
     }
 
-    public void setVoltage(double voltage) {
+
+    public void setVoltage(
+            double voltage
+    ) {
+
         this.voltage = voltage;
     }
 
-    public void setTxPower(double txPower) {
+
+    public void setTxPower(
+            double txPower
+    ) {
+
         this.txPower = txPower;
     }
 
-    public void setRxPower(double rxPower) {
+
+    public void setRxPower(
+            double rxPower
+    ) {
+
         this.rxPower = rxPower;
     }
 
-    public void setWavelength(double wavelength) {
+
+    public void setWavelength(
+            double wavelength
+    ) {
+
         this.wavelength = wavelength;
     }
 
-    public void setLaserCurrent(double laserCurrent) {
+
+    public void setLaserCurrent(
+            double laserCurrent
+    ) {
+
         this.laserCurrent = laserCurrent;
     }
 }

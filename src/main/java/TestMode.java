@@ -83,6 +83,10 @@ public class TestMode {
                     editWavelength();
                     break;
 
+                case "T":
+                    showThreshold();
+                    break;
+
                 case "S":
                     startTest();
                     break;
@@ -223,6 +227,10 @@ public class TestMode {
         );
 
         System.out.println(
+                "[T] VIEW THRESHOLD"
+        );
+
+        System.out.println(
                 "[S] START TEST"
         );
 
@@ -241,6 +249,195 @@ public class TestMode {
         System.out.print(
                 "Select parameter : "
         );
+    }
+
+
+    // =================================
+    // VIEW THRESHOLD
+    // =================================
+
+    private void showThreshold() {
+
+        ThresholdManager threshold =
+                ThresholdFactory.getThreshold(
+                        selectedModule.getModel()
+                );
+
+
+        boolean running = true;
+
+
+        while (running) {
+
+            System.out.println();
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.println(
+                    "          MODEL THRESHOLD"
+            );
+
+            System.out.println(
+                    "========================================"
+            );
+
+            System.out.println(
+                    "Module : "
+                            + selectedModule.getModuleId()
+            );
+
+            System.out.println(
+                    "Model  : "
+                            + selectedModule.getModel()
+            );
+
+            System.out.println(
+                    "----------------------------------------"
+            );
+
+
+            // =================================
+            // Temperature
+            // =================================
+
+            System.out.println(
+                    "Temperature"
+            );
+
+            System.out.println(
+                    "  Normal : <= "
+                            + threshold.getMaxTemperature()
+                            + " °C"
+            );
+
+
+            // =================================
+            // Voltage
+            // =================================
+
+            System.out.println();
+
+            System.out.println(
+                    "Voltage"
+            );
+
+            System.out.println(
+                    "  Normal : "
+                            + threshold.getMinVoltage()
+                            + " - "
+                            + threshold.getMaxVoltage()
+                            + " V"
+            );
+
+
+            // =================================
+            // RX Power
+            // =================================
+
+            System.out.println();
+
+            System.out.println(
+                    "RX Power"
+            );
+
+            System.out.println(
+                    "  Normal : >= "
+                            + threshold.getMinRxPower()
+                            + " dBm"
+            );
+
+
+            // =================================
+            // TX Power
+            // =================================
+
+            System.out.println();
+
+            System.out.println(
+                    "TX Power"
+            );
+
+            System.out.println(
+                    "  Normal : "
+                            + threshold.getMinTxPower()
+                            + " - "
+                            + threshold.getMaxTxPower()
+                            + " dBm"
+            );
+
+
+            // =================================
+            // Laser Current
+            // =================================
+
+            System.out.println();
+
+            System.out.println(
+                    "Laser Current"
+            );
+
+            System.out.println(
+                    "  Normal : "
+                            + threshold.getMinLaserCurrent()
+                            + " - "
+                            + threshold.getMaxLaserCurrent()
+                            + " mA"
+            );
+
+
+            // =================================
+            // Wavelength
+            // =================================
+
+            System.out.println();
+
+            System.out.println(
+                    "Wavelength"
+            );
+
+            System.out.println(
+                    "  Normal : "
+                            + threshold.getMinWavelength()
+                            + " - "
+                            + threshold.getMaxWavelength()
+                            + " nm"
+            );
+
+
+            // =================================
+            // Back
+            // =================================
+
+            System.out.println();
+
+            System.out.println(
+                    "----------------------------------------"
+            );
+
+            System.out.println(
+                    "[0] BACK"
+            );
+
+            System.out.println(
+                    "----------------------------------------"
+            );
+
+            System.out.print(
+                    "Select : "
+            );
+
+
+            String command =
+                    waitForInput();
+
+
+            if (command.equals("0")) {
+
+                running = false;
+            }
+        }
     }
 
 

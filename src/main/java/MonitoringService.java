@@ -3,20 +3,6 @@ import java.util.List;
 
 public class MonitoringService {
 
-    // =================================
-    // Threshold
-    // =================================
-
-    private static final double MAX_TEMPERATURE = 85.0;
-
-    private static final double MIN_VOLTAGE = 3.0;
-    private static final double MAX_VOLTAGE = 3.6;
-
-    private static final double MIN_RX_POWER = -10.0;
-
-    private static final double MIN_LASER_CURRENT = 10.0;
-    private static final double MAX_LASER_CURRENT = 100.0;
-
 
     // =================================
     // Monitor
@@ -30,8 +16,44 @@ public class MonitoringService {
                 new ArrayList<>();
 
 
+        // =================================
+        // Check Module
+        // =================================
+
+        if (module == null) {
+
+            throw new IllegalArgumentException(
+                    "Transceiver module cannot be null."
+            );
+        }
+
+
+        // =================================
+        // Get Telemetry
+        // =================================
+
         Telemetry telemetry =
                 module.getTelemetry();
+
+
+        if (telemetry == null) {
+
+            return new MonitoringReport(
+                    module,
+                    "ALARM",
+                    alarms
+            );
+        }
+
+
+        // =================================
+        // Get Model Threshold
+        // =================================
+
+        ThresholdManager threshold =
+                ThresholdFactory.getThreshold(
+                        module.getModel()
+                );
 
 
         // =================================
@@ -40,6 +62,7 @@ public class MonitoringService {
 
         checkTemperature(
                 telemetry,
+                threshold,
                 alarms
         );
 
@@ -50,6 +73,7 @@ public class MonitoringService {
 
         checkVoltage(
                 telemetry,
+                threshold,
                 alarms
         );
 
@@ -60,6 +84,18 @@ public class MonitoringService {
 
         checkRxPower(
                 telemetry,
+                threshold,
+                alarms
+        );
+
+
+        // =================================
+        // TX Power
+        // =================================
+
+        checkTxPower(
+                telemetry,
+                threshold,
                 alarms
         );
 
@@ -70,6 +106,18 @@ public class MonitoringService {
 
         checkLaserCurrent(
                 telemetry,
+                threshold,
+                alarms
+        );
+
+
+        // =================================
+        // Wavelength
+        // =================================
+
+        checkWavelength(
+                telemetry,
+                threshold,
                 alarms
         );
 
@@ -103,11 +151,12 @@ public class MonitoringService {
 
 
     // =================================
-    // Temperature Check
+    // Temperature
     // =================================
 
     private void checkTemperature(
             Telemetry telemetry,
+            ThresholdManager threshold,
             List<Alarm> alarms
     ) {
 
@@ -115,7 +164,10 @@ public class MonitoringService {
                 telemetry.getTemperature();
 
 
-        if (temperature > MAX_TEMPERATURE) {
+        if (
+                temperature >
+                        threshold.getMaxTemperature()
+        ) {
 
             alarms.add(
                     new Alarm(
@@ -123,7 +175,7 @@ public class MonitoringService {
                             AlarmSeverity.CRITICAL,
                             "Temperature is too high",
                             temperature,
-                            MAX_TEMPERATURE
+                            threshold.getMaxTemperature()
                     )
             );
         }
@@ -131,11 +183,12 @@ public class MonitoringService {
 
 
     // =================================
-    // Voltage Check
+    // Voltage
     // =================================
 
     private void checkVoltage(
             Telemetry telemetry,
+            ThresholdManager threshold,
             List<Alarm> alarms
     ) {
 
@@ -143,7 +196,10 @@ public class MonitoringService {
                 telemetry.getVoltage();
 
 
-        if (voltage < MIN_VOLTAGE) {
+        if (
+                voltage <
+                        threshold.getMinVoltage()
+        ) {
 
             alarms.add(
                     new Alarm(
@@ -151,13 +207,16 @@ public class MonitoringService {
                             AlarmSeverity.CRITICAL,
                             "Voltage is too low",
                             voltage,
-                            MIN_VOLTAGE
+                            threshold.getMinVoltage()
                     )
             );
         }
 
 
-        if (voltage > MAX_VOLTAGE) {
+        if (
+                voltage >
+                        threshold.getMaxVoltage()
+        ) {
 
             alarms.add(
                     new Alarm(
@@ -165,7 +224,7 @@ public class MonitoringService {
                             AlarmSeverity.CRITICAL,
                             "Voltage is too high",
                             voltage,
-                            MAX_VOLTAGE
+                            threshold.getMaxVoltage()
                     )
             );
         }
@@ -173,11 +232,12 @@ public class MonitoringService {
 
 
     // =================================
-    // RX Power Check
+    // RX Power
     // =================================
 
     private void checkRxPower(
             Telemetry telemetry,
+            ThresholdManager threshold,
             List<Alarm> alarms
     ) {
 
@@ -185,7 +245,10 @@ public class MonitoringService {
                 telemetry.getRxPower();
 
 
-        if (rxPower < MIN_RX_POWER) {
+        if (
+                rxPower <
+                        threshold.getMinRxPower()
+        ) {
 
             alarms.add(
                     new Alarm(
@@ -193,7 +256,7 @@ public class MonitoringService {
                             AlarmSeverity.WARNING,
                             "RX Power is too low",
                             rxPower,
-                            MIN_RX_POWER
+                            threshold.getMinRxPower()
                     )
             );
         }
@@ -201,11 +264,61 @@ public class MonitoringService {
 
 
     // =================================
-    // Laser Current Check
+    // TX Power
+    // =================================
+
+    private void checkTxPower(
+            Telemetry telemetry,
+            ThresholdManager threshold,
+            List<Alarm> alarms
+    ) {
+
+        double txPower =
+                telemetry.getTxPower();
+
+
+        if (
+                txPower <
+                        threshold.getMinTxPower()
+        ) {
+
+            alarms.add(
+                    new Alarm(
+                            AlarmType.TX_POWER_LOW,
+                            AlarmSeverity.WARNING,
+                            "TX Power is too low",
+                            txPower,
+                            threshold.getMinTxPower()
+                    )
+            );
+        }
+
+
+        if (
+                txPower >
+                        threshold.getMaxTxPower()
+        ) {
+
+            alarms.add(
+                    new Alarm(
+                            AlarmType.TX_POWER_HIGH,
+                            AlarmSeverity.WARNING,
+                            "TX Power is too high",
+                            txPower,
+                            threshold.getMaxTxPower()
+                    )
+            );
+        }
+    }
+
+
+    // =================================
+    // Laser Current
     // =================================
 
     private void checkLaserCurrent(
             Telemetry telemetry,
+            ThresholdManager threshold,
             List<Alarm> alarms
     ) {
 
@@ -213,37 +326,84 @@ public class MonitoringService {
                 telemetry.getLaserCurrent();
 
 
-        // =================================
-        // LASER CURRENT LOW
-        // =================================
-
-        if (laserCurrent < MIN_LASER_CURRENT) {
+        if (
+                laserCurrent <
+                        threshold.getMinLaserCurrent()
+        ) {
 
             alarms.add(
                     new Alarm(
                             AlarmType.LASER_CURRENT_LOW,
-                            AlarmSeverity.WARNING,
+                            AlarmSeverity.CRITICAL,
                             "Laser Current is too low",
                             laserCurrent,
-                            MIN_LASER_CURRENT
+                            threshold.getMinLaserCurrent()
                     )
             );
         }
 
 
-        // =================================
-        // LASER CURRENT HIGH
-        // =================================
-
-        if (laserCurrent > MAX_LASER_CURRENT) {
+        if (
+                laserCurrent >
+                        threshold.getMaxLaserCurrent()
+        ) {
 
             alarms.add(
                     new Alarm(
                             AlarmType.LASER_CURRENT_HIGH,
-                            AlarmSeverity.WARNING,
+                            AlarmSeverity.CRITICAL,
                             "Laser Current is too high",
                             laserCurrent,
-                            MAX_LASER_CURRENT
+                            threshold.getMaxLaserCurrent()
+                    )
+            );
+        }
+    }
+
+
+    // =================================
+    // Wavelength
+    // =================================
+
+    private void checkWavelength(
+            Telemetry telemetry,
+            ThresholdManager threshold,
+            List<Alarm> alarms
+    ) {
+
+        double wavelength =
+                telemetry.getWavelength();
+
+
+        if (
+                wavelength <
+                        threshold.getMinWavelength()
+        ) {
+
+            alarms.add(
+                    new Alarm(
+                            AlarmType.WAVELENGTH_LOW,
+                            AlarmSeverity.WARNING,
+                            "Wavelength is too low",
+                            wavelength,
+                            threshold.getMinWavelength()
+                    )
+            );
+        }
+
+
+        if (
+                wavelength >
+                        threshold.getMaxWavelength()
+        ) {
+
+            alarms.add(
+                    new Alarm(
+                            AlarmType.WAVELENGTH_HIGH,
+                            AlarmSeverity.WARNING,
+                            "Wavelength is too high",
+                            wavelength,
+                            threshold.getMaxWavelength()
                     )
             );
         }

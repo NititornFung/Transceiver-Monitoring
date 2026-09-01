@@ -28,26 +28,19 @@ public class MonitoringReport {
     // =================================
 
     public Transceiver getModule() {
+
         return module;
     }
 
 
     public String getStatus() {
+
         return status;
     }
 
 
     public List<Alarm> getAlarms() {
+
         return alarms;
-    }
-
-
-    // =================================
-    // Check Alarm
-    // =================================
-
-    public boolean hasAlarm() {
-
-        return !alarms.isEmpty();
     }
 }
