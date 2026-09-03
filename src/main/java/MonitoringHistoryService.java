@@ -1,157 +1,203 @@
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 public class MonitoringHistoryService {
 
-    // =================================
-    // History Storage
-    // =================================
 
-    private final Map<String, List<MonitoringRecord>> history =
-            new HashMap<>();
+    // =========================================
+    // HISTORY STORAGE
+    // =========================================
+
+    private final List<MonitoringHistory> historyList;
 
 
-    // =================================
-    // Add History
-    // =================================
+    // =========================================
+    // CONSTRUCTOR
+    // =========================================
+
+    public MonitoringHistoryService() {
+
+        historyList =
+                new ArrayList<>();
+    }
+
+
+    // =========================================
+    // ADD HISTORY
+    // =========================================
 
     public void addHistory(
             Transceiver module,
             String status
     ) {
 
-        String moduleId =
-                module.getModuleId();
-
-
-        // =================================
-        // Create Monitoring Record
-        // =================================
-
-        MonitoringRecord record =
-                new MonitoringRecord(
-                        module.getModuleId(),
-                        LocalDateTime.now(),
-                        module.getTelemetry().getTemperature(),
-                        module.getTelemetry().getVoltage(),
-                        module.getTelemetry().getRxPower(),
-                        module.getTelemetry().getTxPower(),
-                        module.getTelemetry().getLaserCurrent(),
+        MonitoringHistory history =
+                new MonitoringHistory(
+                        module,
                         status
                 );
 
 
-        // =================================
-        // Create History List
-        // =================================
-
-        if (!history.containsKey(moduleId)) {
-
-            history.put(
-                    moduleId,
-                    new ArrayList<>()
-            );
-        }
-
-
-        // =================================
-        // Save Record
-        // =================================
-
-        history.get(moduleId)
-                .add(record);
+        historyList.add(
+                history
+        );
     }
 
 
-    // =================================
-    // Get History
-    // =================================
+    // =========================================
+    // GET ALL HISTORY
+    // =========================================
 
-    public List<MonitoringRecord> getHistory(
+    public List<MonitoringHistory> getHistoryList() {
+
+        return historyList;
+    }
+
+
+    // =========================================
+    // GET HISTORY BY MODULE
+    // =========================================
+
+    public List<MonitoringHistory> getHistory(
             Transceiver module
     ) {
 
-        String moduleId =
-                module.getModuleId();
+        List<MonitoringHistory> moduleHistory =
+                new ArrayList<>();
 
 
-        if (!history.containsKey(moduleId)) {
+        for (
+                MonitoringHistory history :
+                historyList
+        ) {
 
-            return new ArrayList<>();
+            if (
+                    history.getModule()
+                            .getModuleId()
+                            .equals(
+                                    module.getModuleId()
+                            )
+            ) {
+
+                moduleHistory.add(
+                        history
+                );
+            }
         }
 
 
-        return history.get(moduleId);
+        return moduleHistory;
     }
 
 
-    // =================================
-    // Print History
-    // =================================
+    // =========================================
+    // PRINT HISTORY
+    // =========================================
 
     public void printHistory(
             Transceiver module
     ) {
 
-        System.out.println(
-                "\n========================================"
-        );
+        List<MonitoringHistory> moduleHistory =
+                getHistory(module);
 
-        System.out.println(
-                "          MONITORING HISTORY"
-        );
+
+        System.out.println();
 
         System.out.println(
                 "========================================"
         );
 
         System.out.println(
-                "Module : "
-                        + module.getModuleId()
+                "       MONITORING HISTORY"
         );
 
         System.out.println(
-                "Model  : "
-                        + module.getModel()
+                "========================================"
         );
 
 
-        List<MonitoringRecord> records =
-                getHistory(module);
-
-
-        // =================================
-        // No History
-        // =================================
-
-        if (records.isEmpty()) {
+        if (moduleHistory.isEmpty()) {
 
             System.out.println(
-                    "\nNo history available."
+                    "No monitoring history found."
             );
 
-            return;
+        } else {
+
+            for (
+                    MonitoringHistory history :
+                    moduleHistory
+            ) {
+
+                System.out.println(
+                        "Module : "
+                                + history.getModule()
+                                .getModuleId()
+                );
+
+                System.out.println(
+                        "Model  : "
+                                + history.getModule()
+                                .getModel()
+                );
+
+                System.out.println(
+                        "Status : "
+                                + history.getStatus()
+                );
+
+                System.out.println(
+                        "Time   : "
+                                + history.getFormattedTime()
+                );
+
+                System.out.println(
+                        "----------------------------------------"
+                );
+            }
         }
+    }
 
 
-        // =================================
-        // Display History
-        // =================================
+    // =========================================
+    // GET COUNT
+    // =========================================
 
-        for (MonitoringRecord record : records) {
+    public int getHistoryCount() {
 
-            System.out.println(
-                    record
-            );
-        }
+        return historyList.size();
+    }
 
 
-        System.out.println(
-                "\nTotal Records : "
-                        + records.size()
+    // =========================================
+    // CLEAR ALL HISTORY
+    // =========================================
+
+    public void clearHistory() {
+
+        historyList.clear();
+    }
+
+
+    // =========================================
+    // CLEAR HISTORY BY MODULE
+    // =========================================
+
+    public void clearHistory(
+            Transceiver module
+    ) {
+
+        historyList.removeIf(
+
+                history ->
+
+                        history.getModule()
+                                .getModuleId()
+                                .equals(
+                                        module.getModuleId()
+                                )
         );
     }
 }

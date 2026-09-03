@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
@@ -33,6 +34,10 @@ public class DashboardApplication extends Application {
     private TelemetrySimulator telemetrySimulator;
 
     private OpticalSpectrumSimulator spectrumSimulator;
+
+    private MonitoringHistoryService monitoringHistoryService;
+
+    private AlarmHistoryService alarmHistoryService;
 
 
     // =========================================
@@ -76,6 +81,15 @@ public class DashboardApplication extends Application {
 
 
     // =========================================
+    // MONITORING STATE
+    // =========================================
+
+    private boolean monitoringStarted = false;
+
+    private boolean monitoringPaused = false;
+
+
+    // =========================================
     // VOLTAGE GRAPH
     // =========================================
 
@@ -112,11 +126,21 @@ public class DashboardApplication extends Application {
         monitoringService =
                 new MonitoringService();
 
+
         telemetrySimulator =
                 new TelemetrySimulator();
 
+
         spectrumSimulator =
                 new OpticalSpectrumSimulator();
+
+
+        monitoringHistoryService =
+                new MonitoringHistoryService();
+
+
+        alarmHistoryService =
+                new AlarmHistoryService();
 
 
         // =========================================
@@ -163,13 +187,14 @@ public class DashboardApplication extends Application {
 
         systemStatusLabel =
                 new Label(
-                        "● CONNECTING"
+                        "● STOPPED"
                 );
 
 
         systemStatusLabel.setStyle(
                 "-fx-font-size: 14px;" +
-                        "-fx-font-weight: bold;"
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: gray;"
         );
 
 
@@ -245,14 +270,12 @@ public class DashboardApplication extends Application {
         );
 
 
-        moduleInfo.setPadding(
-                new Insets(
-                        10,
-                        10,
-                        10,
-                        10
-                )
-        );
+        // =========================================
+        // CONTROL PANEL
+        // =========================================
+
+        HBox controlPanel =
+                createControlPanel();
 
 
         // =========================================
@@ -313,7 +336,7 @@ public class DashboardApplication extends Application {
 
 
         // =========================================
-        // ADD CARDS TO GRID
+        // ADD CARDS
         // =========================================
 
         telemetryGrid.add(
@@ -359,15 +382,10 @@ public class DashboardApplication extends Application {
 
 
         // =========================================
-        // CREATE VOLTAGE GRAPH
+        // CREATE GRAPHS
         // =========================================
 
         createVoltageChart();
-
-
-        // =========================================
-        // CREATE OPTICAL SPECTRUM GRAPH
-        // =========================================
 
         createSpectrumChart();
 
@@ -380,6 +398,7 @@ public class DashboardApplication extends Application {
                 new VBox(
                         25,
                         moduleInfo,
+                        controlPanel,
                         telemetryGrid,
                         voltageChart,
                         spectrumChart
@@ -431,11 +450,6 @@ public class DashboardApplication extends Application {
         );
 
 
-        scrollPane.setStyle(
-                "-fx-background-color: #f5f5f5;"
-        );
-
-
         // =========================================
         // SET ROOT
         // =========================================
@@ -480,17 +494,331 @@ public class DashboardApplication extends Application {
 
 
         // =========================================
-        // INITIAL DASHBOARD UPDATE
+        // INITIAL UPDATE
         // =========================================
 
         updateDashboard();
+    }
+
+
+    // =========================================
+    // CREATE CONTROL PANEL
+    // =========================================
+
+    private HBox createControlPanel() {
+
+
+        Button startButton =
+                new Button(
+                        "▶ START"
+                );
+
+
+        Button pauseButton =
+                new Button(
+                        "⏸ PAUSE"
+                );
+
+
+        Button resumeButton =
+                new Button(
+                        "▶ RESUME"
+                );
+
+
+        Button testModeButton =
+                new Button(
+                        "🧪 TEST MODE"
+                );
+
+
+        Button historyButton =
+                new Button(
+                        "📊 MONITORING HISTORY"
+                );
+
+
+        Button alarmHistoryButton =
+                new Button(
+                        "🚨 ALARM HISTORY"
+                );
+
+
+        startButton.setPrefWidth(110);
+
+        pauseButton.setPrefWidth(110);
+
+        resumeButton.setPrefWidth(110);
+
+        testModeButton.setPrefWidth(130);
+
+        historyButton.setPrefWidth(180);
+
+        alarmHistoryButton.setPrefWidth(160);
 
 
         // =========================================
-        // START REAL-TIME MONITORING
+        // BUTTON ACTIONS
         // =========================================
+
+        startButton.setOnAction(
+                event -> startMonitoring()
+        );
+
+
+        pauseButton.setOnAction(
+                event -> pauseMonitoring()
+        );
+
+
+        resumeButton.setOnAction(
+                event -> resumeMonitoring()
+        );
+
+
+        testModeButton.setOnAction(
+                event -> openTestMode()
+        );
+
+
+        historyButton.setOnAction(
+                event -> showMonitoringHistory()
+        );
+
+
+        alarmHistoryButton.setOnAction(
+                event -> showAlarmHistory()
+        );
+
+
+        HBox controlPanel =
+                new HBox(
+                        10,
+                        startButton,
+                        pauseButton,
+                        resumeButton,
+                        testModeButton,
+                        historyButton,
+                        alarmHistoryButton
+                );
+
+
+        controlPanel.setAlignment(
+                Pos.CENTER
+        );
+
+
+        controlPanel.setPadding(
+                new Insets(15)
+        );
+
+
+        return controlPanel;
+    }
+
+
+    // =========================================
+    // START MONITORING
+    // =========================================
+
+    private void startMonitoring() {
+
+
+        if (monitoringStarted) {
+
+            if (monitoringPaused) {
+
+                resumeMonitoring();
+            }
+
+            return;
+        }
+
+
+        monitoringStarted = true;
+
+        monitoringPaused = false;
+
 
         startRealTimeMonitoring();
+
+
+        updateSystemStatus(
+                "● RUNNING",
+                "#00aa00"
+        );
+    }
+
+
+    // =========================================
+    // PAUSE MONITORING
+    // =========================================
+
+    private void pauseMonitoring() {
+
+
+        if (
+                monitoringTimeline != null
+                        &&
+                        monitoringStarted
+                        &&
+                        !monitoringPaused
+        ) {
+
+            monitoringTimeline.pause();
+
+            monitoringPaused = true;
+
+
+            updateSystemStatus(
+                    "● PAUSED",
+                    "orange"
+            );
+        }
+    }
+
+
+    // =========================================
+    // RESUME MONITORING
+    // =========================================
+
+    private void resumeMonitoring() {
+
+
+        if (
+                monitoringTimeline != null
+                        &&
+                        monitoringPaused
+        ) {
+
+            monitoringTimeline.play();
+
+            monitoringPaused = false;
+
+
+            updateSystemStatus(
+                    "● RUNNING",
+                    "#00aa00"
+            );
+        }
+    }
+
+
+    // =========================================
+    // UPDATE SYSTEM STATUS
+    // =========================================
+
+    private void updateSystemStatus(
+            String status,
+            String color
+    ) {
+
+
+        systemStatusLabel.setText(
+                status
+        );
+
+
+        systemStatusLabel.setStyle(
+                "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: "
+                        + color
+                        + ";"
+        );
+    }
+
+
+    // =========================================
+    // OPEN TEST MODE
+    // =========================================
+
+    private void openTestMode() {
+
+
+        // =========================================
+        // PAUSE REAL-TIME MONITORING
+        // =========================================
+
+        boolean wasRunning =
+                monitoringStarted
+                        &&
+                        !monitoringPaused;
+
+
+        if (wasRunning) {
+
+            pauseMonitoring();
+        }
+
+
+        // =========================================
+        // OPEN TEST WINDOW
+        // =========================================
+
+        TestModeWindow testModeWindow =
+                new TestModeWindow(
+
+                        selectedModule,
+
+                        monitoringService,
+
+                        monitoringHistoryService,
+
+                        alarmHistoryService,
+
+                        this::updateDashboard
+                );
+
+
+        testModeWindow.show();
+
+
+        // =========================================
+        // KEEP PAUSED AFTER TEST MODE
+        // =========================================
+
+        if (wasRunning) {
+
+            updateSystemStatus(
+                    "● PAUSED",
+                    "orange"
+            );
+        }
+    }
+
+
+    // =========================================
+    // SHOW MONITORING HISTORY
+    // =========================================
+
+    private void showMonitoringHistory() {
+
+
+        MonitoringHistoryWindow historyWindow =
+                new MonitoringHistoryWindow(
+                        monitoringHistoryService
+                );
+
+
+        historyWindow.show();
+    }
+
+
+    // =========================================
+    // SHOW ALARM HISTORY
+    // =========================================
+
+    private void showAlarmHistory() {
+
+
+        AlarmHistoryWindow alarmWindow =
+                new AlarmHistoryWindow(
+                        alarmHistoryService
+                );
+
+
+        alarmWindow.show();
     }
 
 
@@ -504,9 +832,7 @@ public class DashboardApplication extends Application {
 
 
         Label titleLabel =
-                new Label(
-                        title
-                );
+                new Label(title);
 
 
         titleLabel.setStyle(
@@ -516,9 +842,7 @@ public class DashboardApplication extends Application {
 
 
         Label valueLabel =
-                new Label(
-                        "--"
-                );
+                new Label("--");
 
 
         valueLabel.setStyle(
@@ -528,9 +852,7 @@ public class DashboardApplication extends Application {
 
 
         Label statusLabel =
-                new Label(
-                        "WAITING"
-                );
+                new Label("WAITING");
 
 
         statusLabel.setStyle(
@@ -571,75 +893,59 @@ public class DashboardApplication extends Application {
         );
 
 
-        // =========================================
-        // SAVE LABEL REFERENCES
-        // =========================================
-
         switch (title) {
 
 
             case "TEMPERATURE":
 
-                temperatureValueLabel =
-                        valueLabel;
+                temperatureValueLabel = valueLabel;
 
-                temperatureStatusLabel =
-                        statusLabel;
+                temperatureStatusLabel = statusLabel;
 
                 break;
 
 
             case "VOLTAGE":
 
-                voltageValueLabel =
-                        valueLabel;
+                voltageValueLabel = valueLabel;
 
-                voltageStatusLabel =
-                        statusLabel;
+                voltageStatusLabel = statusLabel;
 
                 break;
 
 
             case "RX POWER":
 
-                rxPowerValueLabel =
-                        valueLabel;
+                rxPowerValueLabel = valueLabel;
 
-                rxPowerStatusLabel =
-                        statusLabel;
+                rxPowerStatusLabel = statusLabel;
 
                 break;
 
 
             case "TX POWER":
 
-                txPowerValueLabel =
-                        valueLabel;
+                txPowerValueLabel = valueLabel;
 
-                txPowerStatusLabel =
-                        statusLabel;
+                txPowerStatusLabel = statusLabel;
 
                 break;
 
 
             case "LASER CURRENT":
 
-                laserCurrentValueLabel =
-                        valueLabel;
+                laserCurrentValueLabel = valueLabel;
 
-                laserCurrentStatusLabel =
-                        statusLabel;
+                laserCurrentStatusLabel = statusLabel;
 
                 break;
 
 
             case "WAVELENGTH":
 
-                wavelengthValueLabel =
-                        valueLabel;
+                wavelengthValueLabel = valueLabel;
 
-                wavelengthStatusLabel =
-                        statusLabel;
+                wavelengthStatusLabel = statusLabel;
 
                 break;
         }
@@ -707,11 +1013,6 @@ public class DashboardApplication extends Application {
 
         voltageChart.setPrefHeight(
                 300
-        );
-
-
-        voltageChart.setMaxWidth(
-                Double.MAX_VALUE
         );
 
 
@@ -800,11 +1101,6 @@ public class DashboardApplication extends Application {
         );
 
 
-        spectrumChart.setMaxWidth(
-                Double.MAX_VALUE
-        );
-
-
         spectrumSeries =
                 new XYChart.Series<>();
 
@@ -827,15 +1123,26 @@ public class DashboardApplication extends Application {
     private void startRealTimeMonitoring() {
 
 
+        if (monitoringTimeline != null) {
+
+            monitoringTimeline.play();
+
+            return;
+        }
+
+
         monitoringTimeline =
                 new Timeline(
                         new KeyFrame(
                                 Duration.seconds(1),
+
                                 event -> {
 
                                     updateTelemetryData();
 
                                     updateDashboard();
+
+                                    saveMonitoringData();
                                 }
                         )
                 );
@@ -851,7 +1158,33 @@ public class DashboardApplication extends Application {
 
 
     // =========================================
-    // UPDATE TELEMETRY DATA
+    // SAVE MONITORING DATA
+    // =========================================
+
+    private void saveMonitoringData() {
+
+
+        MonitoringReport report =
+                monitoringService.monitor(
+                        selectedModule
+                );
+
+
+        monitoringHistoryService.addHistory(
+                selectedModule,
+                report.getStatus()
+        );
+
+
+        alarmHistoryService.processAlarms(
+                selectedModule,
+                report.getAlarms()
+        );
+    }
+
+
+    // =========================================
+    // UPDATE TELEMETRY
     // =========================================
 
     private void updateTelemetryData() {
@@ -880,9 +1213,11 @@ public class DashboardApplication extends Application {
                 selectedModule.getTelemetry();
 
 
-        // =========================================
-        // UPDATE GRAPHS
-        // =========================================
+        if (telemetry == null) {
+
+            return;
+        }
+
 
         updateVoltageGraph(
                 telemetry.getVoltage()
@@ -894,19 +1229,11 @@ public class DashboardApplication extends Application {
         );
 
 
-        // =========================================
-        // RUN MONITORING
-        // =========================================
-
         MonitoringReport report =
                 monitoringService.monitor(
                         selectedModule
                 );
 
-
-        // =========================================
-        // UPDATE VALUES
-        // =========================================
 
         temperatureValueLabel.setText(
                 String.format(
@@ -956,56 +1283,24 @@ public class DashboardApplication extends Application {
         );
 
 
-        // =========================================
-        // GET STATUS
-        // =========================================
-
-        String temperatureStatus =
-                getTemperatureStatus(
-                        report
-                );
-
-
-        String voltageStatus =
-                getVoltageStatus(
-                        report
-                );
-
-
-        String rxPowerStatus =
-                getRxPowerStatus(
-                        report
-                );
-
-
-        String laserCurrentStatus =
-                getLaserCurrentStatus(
-                        report
-                );
-
-
-        // =========================================
-        // UPDATE CARDS
-        // =========================================
-
         updateCardStatus(
                 temperatureCard,
                 temperatureStatusLabel,
-                temperatureStatus
+                getTemperatureStatus(report)
         );
 
 
         updateCardStatus(
                 voltageCard,
                 voltageStatusLabel,
-                voltageStatus
+                getVoltageStatus(report)
         );
 
 
         updateCardStatus(
                 rxPowerCard,
                 rxPowerStatusLabel,
-                rxPowerStatus
+                getRxPowerStatus(report)
         );
 
 
@@ -1019,7 +1314,7 @@ public class DashboardApplication extends Application {
         updateCardStatus(
                 laserCurrentCard,
                 laserCurrentStatusLabel,
-                laserCurrentStatus
+                getLaserCurrentStatus(report)
         );
 
 
@@ -1028,33 +1323,6 @@ public class DashboardApplication extends Application {
                 wavelengthStatusLabel,
                 "NORMAL"
         );
-
-
-        // =========================================
-        // SYSTEM STATUS
-        // =========================================
-
-        systemStatusLabel.setText(
-                "● " + report.getStatus()
-        );
-
-
-        if (report.getStatus().equals("NORMAL")) {
-
-            systemStatusLabel.setStyle(
-                    "-fx-font-size: 14px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-text-fill: #00aa00;"
-            );
-
-        } else {
-
-            systemStatusLabel.setStyle(
-                    "-fx-font-size: 14px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-text-fill: red;"
-            );
-        }
     }
 
 
@@ -1091,17 +1359,13 @@ public class DashboardApplication extends Application {
 
 
     // =========================================
-    // UPDATE OPTICAL SPECTRUM GRAPH
+    // UPDATE SPECTRUM GRAPH
     // =========================================
 
     private void updateSpectrumGraph(
             double centerWavelength
     ) {
 
-
-        // =========================================
-        // DYNAMIC X AXIS
-        // =========================================
 
         spectrumXAxis.setLowerBound(
                 centerWavelength - 3.0
@@ -1118,10 +1382,6 @@ public class DashboardApplication extends Application {
         );
 
 
-        // =========================================
-        // GENERATE SPECTRUM
-        // =========================================
-
         List<SpectrumPoint> spectrumData =
                 spectrumSimulator.generateSpectrum(
                         centerWavelength
@@ -1130,10 +1390,6 @@ public class DashboardApplication extends Application {
 
         spectrumSeries.getData().clear();
 
-
-        // =========================================
-        // ADD DATA TO GRAPH
-        // =========================================
 
         for (
                 SpectrumPoint point :
@@ -1155,8 +1411,11 @@ public class DashboardApplication extends Application {
     // =========================================
 
     private void updateCardStatus(
+
             VBox card,
+
             Label statusLabel,
+
             String status
     ) {
 
@@ -1166,7 +1425,11 @@ public class DashboardApplication extends Application {
         );
 
 
-        if (status.equals("NORMAL")) {
+        if (
+                status.equals(
+                        "NORMAL"
+                )
+        ) {
 
             statusLabel.setStyle(
                     "-fx-text-fill: #00aa00;" +

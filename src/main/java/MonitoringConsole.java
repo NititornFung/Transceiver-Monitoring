@@ -1,6 +1,7 @@
 import java.util.List;
 import java.util.Scanner;
 
+
 public class MonitoringConsole {
 
     private final MonitoringHistoryService historyService;
@@ -228,11 +229,15 @@ public class MonitoringConsole {
         // Get History
         // =================================
 
-        List<MonitoringRecord> records =
+        List<MonitoringHistory> records =
                 historyService.getHistory(
                         module
                 );
 
+
+        // =================================
+        // No History
+        // =================================
 
         if (records.isEmpty()) {
 
@@ -251,10 +256,23 @@ public class MonitoringConsole {
         System.out.println();
 
 
-        for (MonitoringRecord record : records) {
+        for (
+                MonitoringHistory record :
+                records
+        ) {
 
             System.out.println(
-                    record
+                    "Status : "
+                            + record.getStatus()
+            );
+
+            System.out.println(
+                    "Time   : "
+                            + record.getFormattedTime()
+            );
+
+            System.out.println(
+                    "----------------------------------------"
             );
         }
 

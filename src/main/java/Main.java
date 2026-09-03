@@ -1,9 +1,12 @@
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class Main {
 
+
     public static void main(String[] args) {
+
 
         // =========================================
         // Create Transceivers
@@ -15,11 +18,13 @@ public class Main {
                         "400G COSA"
                 );
 
+
         Transceiver tx002 =
                 new Transceiver(
                         "TX002",
                         "800G COSAz"
                 );
+
 
         Transceiver tx003 =
                 new Transceiver(
@@ -35,14 +40,18 @@ public class Main {
         TelemetrySimulator simulator =
                 new TelemetrySimulator();
 
+
         MonitoringService monitoringService =
                 new MonitoringService();
+
 
         MonitoringHistoryService historyService =
                 new MonitoringHistoryService();
 
+
         AlarmHistoryService alarmHistoryService =
                 new AlarmHistoryService();
+
 
         InputHandler inputHandler =
                 new InputHandler();
@@ -68,6 +77,7 @@ public class Main {
         List<Transceiver> modules =
                 new ArrayList<>();
 
+
         modules.add(tx001);
         modules.add(tx002);
         modules.add(tx003);
@@ -89,6 +99,7 @@ public class Main {
 
         while (running) {
 
+
             // =====================================
             // Check User Command
             // =====================================
@@ -101,8 +112,10 @@ public class Main {
             // H = History / Test Center
             // =====================================
 
-            if (command != null
-                    && command.equalsIgnoreCase("H")) {
+            if (
+                    command != null
+                            && command.equalsIgnoreCase("H")
+            ) {
 
                 boolean menuRunning = true;
 
@@ -123,6 +136,7 @@ public class Main {
 
 
                 while (menuRunning) {
+
 
                     System.out.println();
 
@@ -195,6 +209,7 @@ public class Main {
 
                     String menuCommand;
 
+
                     do {
 
                         menuCommand =
@@ -226,12 +241,14 @@ public class Main {
                         );
                     }
 
+
                     else if (menuCommand.equals("2")) {
 
                         historyService.printHistory(
                                 tx002
                         );
                     }
+
 
                     else if (menuCommand.equals("3")) {
 
@@ -254,6 +271,7 @@ public class Main {
                         );
                     }
 
+
                     else if (menuCommand.equals("5")) {
 
                         alarmMenu(
@@ -262,6 +280,7 @@ public class Main {
                                 inputHandler
                         );
                     }
+
 
                     else if (menuCommand.equals("6")) {
 
@@ -359,8 +378,10 @@ public class Main {
             // Q = Quit
             // =====================================
 
-            if (command != null
-                    && command.equalsIgnoreCase("Q")) {
+            if (
+                    command != null
+                            && command.equalsIgnoreCase("Q")
+            ) {
 
                 running = false;
 
@@ -410,6 +431,7 @@ public class Main {
             // =====================================
 
             for (Transceiver module : modules) {
+
 
                 // =================================
                 // Generate Monitoring Report
@@ -641,14 +663,16 @@ public class Main {
 
 
     // =========================================================
-    // Select Module
+    // SELECT MODULE
     // =========================================================
 
     private static Transceiver selectModule(
+
             Transceiver tx001,
             Transceiver tx002,
             Transceiver tx003,
             InputHandler inputHandler
+
     ) {
 
         while (true) {
@@ -694,11 +718,8 @@ public class Main {
             );
 
 
-            // =================================
-            // Wait Input
-            // =================================
-
             String command;
+
 
             do {
 
@@ -720,19 +741,11 @@ public class Main {
             } while (command == null);
 
 
-            // =================================
-            // Select TX001
-            // =================================
-
             if (command.equals("1")) {
 
                 return tx001;
             }
 
-
-            // =================================
-            // Select TX002
-            // =================================
 
             if (command.equals("2")) {
 
@@ -740,19 +753,11 @@ public class Main {
             }
 
 
-            // =================================
-            // Select TX003
-            // =================================
-
             if (command.equals("3")) {
 
                 return tx003;
             }
 
-
-            // =================================
-            // Back
-            // =================================
 
             if (command.equals("0")) {
 
@@ -770,13 +775,15 @@ public class Main {
 
 
     // =========================================================
-    // Alarm Menu
+    // ALARM MENU
     // =========================================================
 
     private static void alarmMenu(
+
             Transceiver module,
             AlarmHistoryService alarmHistoryService,
             InputHandler inputHandler
+
     ) {
 
         boolean menu = true;
@@ -818,11 +825,14 @@ public class Main {
             // =================================
 
             List<AlarmRecord> records =
-                    alarmHistoryService
-                            .getAlarmHistory(
-                                    module
-                            );
+                    alarmHistoryService.getAlarmHistory(
+                            module
+                    );
 
+
+            // =================================
+            // Display Alarm Records
+            // =================================
 
             if (records.isEmpty()) {
 
@@ -832,9 +842,11 @@ public class Main {
 
             } else {
 
-                for (int i = 0;
-                     i < records.size();
-                     i++) {
+                for (
+                        int i = 0;
+                        i < records.size();
+                        i++
+                ) {
 
                     AlarmRecord record =
                             records.get(i);
@@ -882,8 +894,10 @@ public class Main {
                     );
 
 
-                    if (record.getAcknowledgedTime()
-                            != null) {
+                    if (
+                            record.getAcknowledgedTime()
+                                    != null
+                    ) {
 
                         System.out.println(
                                 "ACK Time  : "
@@ -893,8 +907,10 @@ public class Main {
                     }
 
 
-                    if (record.getClearedTime()
-                            != null) {
+                    if (
+                            record.getClearedTime()
+                                    != null
+                    ) {
 
                         System.out.println(
                                 "Clear Time: "
@@ -911,7 +927,6 @@ public class Main {
                                     + " sec"
                     );
 
-
                     System.out.println(
                             "----------------------------------------"
                     );
@@ -920,7 +935,7 @@ public class Main {
 
 
             // =================================
-            // Alarm Menu
+            // Alarm Menu Options
             // =================================
 
             System.out.println();
@@ -944,6 +959,7 @@ public class Main {
 
             String command;
 
+
             do {
 
                 command =
@@ -965,10 +981,11 @@ public class Main {
 
 
             // =================================
-            // Acknowledge
+            // ACKNOWLEDGE ALARM
             // =================================
 
             if (command.equalsIgnoreCase("A")) {
+
 
                 if (records.isEmpty()) {
 
@@ -988,6 +1005,7 @@ public class Main {
 
 
                 String numberInput;
+
 
                 do {
 
@@ -1017,11 +1035,17 @@ public class Main {
                             );
 
 
+                    // =================================
+                    // IMPORTANT
+                    // User sees 1,2,3...
+                    // Java List uses 0,1,2...
+                    // =================================
+
                     boolean success =
                             alarmHistoryService
                                     .acknowledgeAlarm(
                                             module,
-                                            alarmNumber
+                                            alarmNumber - 1
                                     );
 
 
@@ -1054,7 +1078,7 @@ public class Main {
 
 
             // =================================
-            // Back
+            // BACK
             // =================================
 
             else if (command.equals("0")) {
@@ -1064,7 +1088,7 @@ public class Main {
 
 
             // =================================
-            // Invalid
+            // INVALID
             // =================================
 
             else {
