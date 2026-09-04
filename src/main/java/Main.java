@@ -1,3 +1,4 @@
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -202,10 +203,6 @@ public class Main {
                             "Select : "
                     );
 
-
-                    // =================================
-                    // Wait for User Input
-                    // =================================
 
                     String menuCommand;
 
@@ -454,13 +451,56 @@ public class Main {
 
 
                 // =================================
-                // Process Alarm History
+                // Convert REAL Alarm
+                // Alarm -> AlarmRecord
                 // =================================
 
-                alarmHistoryService.processAlarms(
-                        module,
-                        report.getAlarms()
-                );
+                List<AlarmRecord> realAlarms =
+                        new ArrayList<>();
+
+
+                for (Alarm alarm : report.getAlarms()) {
+
+                    AlarmRecord alarmRecord =
+                            new AlarmRecord(
+
+                                    module.getModuleId(),
+
+                                    LocalDateTime.now(),
+
+                                    alarm.getType(),
+
+                                    alarm.getSeverity(),
+
+                                    alarm.getMessage(),
+
+                                    alarm.getActualValue(),
+
+                                    alarm.getThreshold(),
+
+                                    AlarmSource.REAL
+                            );
+
+
+                    realAlarms.add(
+                            alarmRecord
+                    );
+                }
+
+
+                // =================================
+                // Save REAL Alarm History
+                // =================================
+
+                if (!realAlarms.isEmpty()) {
+
+                    alarmHistoryService.addAlarms(
+
+                            module,
+
+                            realAlarms
+                    );
+                }
 
 
                 // =================================
@@ -584,6 +624,10 @@ public class Main {
                         System.out.println(
                                 "  Threshold  : "
                                         + alarm.getThreshold()
+                        );
+
+                        System.out.println(
+                                "  Source     : REAL"
                         );
                     }
                 }
@@ -901,8 +945,7 @@ public class Main {
 
                         System.out.println(
                                 "ACK Time  : "
-                                        + record
-                                        .getAcknowledgedTime()
+                                        + record.getAcknowledgedTime()
                         );
                     }
 
@@ -914,16 +957,14 @@ public class Main {
 
                         System.out.println(
                                 "Clear Time: "
-                                        + record
-                                        .getClearedTime()
+                                        + record.getClearedTime()
                         );
                     }
 
 
                     System.out.println(
                             "Duration  : "
-                                    + record
-                                    .getDurationSeconds()
+                                    + record.getDurationSeconds()
                                     + " sec"
                     );
 
@@ -933,10 +974,6 @@ public class Main {
                 }
             }
 
-
-            // =================================
-            // Alarm Menu Options
-            // =================================
 
             System.out.println();
 
@@ -1034,12 +1071,6 @@ public class Main {
                                     numberInput
                             );
 
-
-                    // =================================
-                    // IMPORTANT
-                    // User sees 1,2,3...
-                    // Java List uses 0,1,2...
-                    // =================================
 
                     boolean success =
                             alarmHistoryService

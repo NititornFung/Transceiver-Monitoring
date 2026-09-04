@@ -1,6 +1,7 @@
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class AlarmHistoryService {
@@ -10,7 +11,10 @@ public class AlarmHistoryService {
     // ALARM HISTORY STORAGE
     // =========================================
 
-    private final List<AlarmRecord> alarmHistory;
+    private final Map<
+            Transceiver,
+            List<AlarmRecord>
+            > alarmHistory;
 
 
     // =========================================
@@ -20,54 +24,67 @@ public class AlarmHistoryService {
     public AlarmHistoryService() {
 
         alarmHistory =
-                new ArrayList<>();
+                new HashMap<>();
     }
 
 
     // =========================================
-    // PROCESS ALARMS
-    // Convert Alarm -> AlarmRecord
+    // ADD ALARMS
     // =========================================
 
-    public void processAlarms(
+    public void addAlarms(
+
             Transceiver module,
-            List<Alarm> alarms
+
+            List<AlarmRecord> alarms
+
     ) {
 
-        // ไม่มี Alarm
         if (alarms == null || alarms.isEmpty()) {
 
             return;
         }
 
 
-        // แปลง Alarm เป็น AlarmRecord
-        for (Alarm alarm : alarms) {
+        List<AlarmRecord> moduleAlarms =
+                alarmHistory.getOrDefault(
+
+                        module,
+
+                        new ArrayList<>()
+                );
 
 
-            AlarmRecord record =
-                    new AlarmRecord(
-
-                            module.getModuleId(),
-
-                            LocalDateTime.now(),
-
-                            alarm.getType(),
-
-                            alarm.getSeverity(),
-
-                            alarm.getMessage(),
-
-                            alarm.getActualValue(),
-
-                            alarm.getThreshold()
-                    );
+        moduleAlarms.addAll(
+                alarms
+        );
 
 
-            alarmHistory.add(
-                    record
-            );
-        }
+        alarmHistory.put(
+
+                module,
+
+                moduleAlarms
+        );
+    }
+
+
+    // =========================================
+    // GET ALARM HISTORY BY MODULE
+    // =========================================
+
+    public List<AlarmRecord> getAlarmHistory(
+
+            Transceiver module
+
+    ) {
+
+        return alarmHistory.getOrDefault(
+
+                module,
+
+                new ArrayList<>()
+        );
     }
 
 
@@ -77,39 +94,24 @@ public class AlarmHistoryService {
 
     public List<AlarmRecord> getAllAlarmHistory() {
 
-        return alarmHistory;
-    }
-
-
-    // =========================================
-    // GET ALARM HISTORY BY MODULE
-    // =========================================
-
-    public List<AlarmRecord> getAlarmHistory(
-            Transceiver module
-    ) {
-
-        List<AlarmRecord> moduleAlarms =
+        List<AlarmRecord> allAlarms =
                 new ArrayList<>();
 
 
-        for (AlarmRecord record : alarmHistory) {
+        for (
 
-            if (
-                    record.getModuleId()
-                            .equals(
-                                    module.getModuleId()
-                            )
-            ) {
+                List<AlarmRecord> alarms :
+                alarmHistory.values()
 
-                moduleAlarms.add(
-                        record
-                );
-            }
+        ) {
+
+            allAlarms.addAll(
+                    alarms
+            );
         }
 
 
-        return moduleAlarms;
+        return allAlarms;
     }
 
 
@@ -118,42 +120,49 @@ public class AlarmHistoryService {
     // =========================================
 
     public boolean acknowledgeAlarm(
+
             Transceiver module,
+
             int index
+
     ) {
 
-        List<AlarmRecord> moduleAlarms =
-                getAlarmHistory(
+        List<AlarmRecord> alarms =
+                alarmHistory.get(
                         module
                 );
 
 
-        // ไม่มี Alarm
-        if (moduleAlarms.isEmpty()) {
+        // ไม่มี Module นี้
+        if (alarms == null) {
 
             return false;
         }
 
 
-        // ตรวจสอบ Index
+        // Index ไม่ถูกต้อง
         if (
+
                 index < 0
-                        || index >= moduleAlarms.size()
+
+                        ||
+
+                        index >= alarms.size()
+
         ) {
 
             return false;
         }
 
 
-        // ดึง AlarmRecord
-        AlarmRecord record =
-                moduleAlarms.get(
+        AlarmRecord alarm =
+                alarms.get(
                         index
                 );
 
 
         // Acknowledge
-        record.acknowledge();
+        alarm.acknowledge();
 
 
         return true;
@@ -165,42 +174,46 @@ public class AlarmHistoryService {
     // =========================================
 
     public boolean clearAlarm(
+
             Transceiver module,
+
             int index
+
     ) {
 
-        List<AlarmRecord> moduleAlarms =
-                getAlarmHistory(
+        List<AlarmRecord> alarms =
+                alarmHistory.get(
                         module
                 );
 
 
-        // ไม่มี Alarm
-        if (moduleAlarms.isEmpty()) {
+        if (alarms == null) {
 
             return false;
         }
 
 
-        // ตรวจสอบ Index
         if (
+
                 index < 0
-                        || index >= moduleAlarms.size()
+
+                        ||
+
+                        index >= alarms.size()
+
         ) {
 
             return false;
         }
 
 
-        // ดึง AlarmRecord
-        AlarmRecord record =
-                moduleAlarms.get(
+        AlarmRecord alarm =
+                alarms.get(
                         index
                 );
 
 
-        // Clear
-        record.clear();
+        alarm.clear();
 
 
         return true;
@@ -213,7 +226,56 @@ public class AlarmHistoryService {
 
     public int getTotalAlarmCount() {
 
-        return alarmHistory.size();
+        int count = 0;
+
+
+        for (
+
+                List<AlarmRecord> alarms :
+                alarmHistory.values()
+
+        ) {
+
+            count += alarms.size();
+        }
+
+
+        return count;
+    }
+
+
+    // =========================================
+    // GET ACTIVE ALARM COUNT
+    // =========================================
+
+    public int getActiveAlarmCount() {
+
+        int count = 0;
+
+
+        for (
+
+                List<AlarmRecord> alarms :
+                alarmHistory.values()
+
+        ) {
+
+            for (AlarmRecord alarm : alarms) {
+
+                if (
+
+                        alarm.getStatus()
+                                == AlarmStatus.ACTIVE
+
+                ) {
+
+                    count++;
+                }
+            }
+        }
+
+
+        return count;
     }
 
 
@@ -232,17 +294,13 @@ public class AlarmHistoryService {
     // =========================================
 
     public void clearHistory(
+
             Transceiver module
+
     ) {
 
-        alarmHistory.removeIf(
-
-                record ->
-
-                        record.getModuleId()
-                                .equals(
-                                        module.getModuleId()
-                                )
+        alarmHistory.remove(
+                module
         );
     }
 }

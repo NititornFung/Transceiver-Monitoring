@@ -3,41 +3,50 @@ import java.time.LocalDateTime;
 
 public class AlarmRecord {
 
-    private String moduleId;
+    private final String moduleId;
 
-    private LocalDateTime timestamp;
+    private final LocalDateTime timestamp;
 
-    private AlarmType type;
+    private final AlarmType type;
 
-    private AlarmSeverity severity;
+    private final AlarmSeverity severity;
 
-    private String message;
+    private final String message;
 
-    private double actualValue;
+    private final double actualValue;
 
-    private double threshold;
+    private final double threshold;
+
+    private final AlarmSource source;
 
     private AlarmStatus status;
 
-    // เวลา Acknowledge
     private LocalDateTime acknowledgedTime;
 
-    // เวลา Clear
     private LocalDateTime clearedTime;
 
 
-    // =================================
-    // Constructor
-    // =================================
+    // =========================================
+    // CONSTRUCTOR
+    // =========================================
 
     public AlarmRecord(
+
             String moduleId,
+
             LocalDateTime timestamp,
+
             AlarmType type,
+
             AlarmSeverity severity,
+
             String message,
+
             double actualValue,
-            double threshold
+
+            double threshold,
+
+            AlarmSource source
     ) {
 
         this.moduleId = moduleId;
@@ -54,7 +63,8 @@ public class AlarmRecord {
 
         this.threshold = threshold;
 
-        // Alarm ใหม่
+        this.source = source;
+
         this.status = AlarmStatus.ACTIVE;
 
         this.acknowledgedTime = null;
@@ -63,9 +73,9 @@ public class AlarmRecord {
     }
 
 
-    // =================================
-    // Getter
-    // =================================
+    // =========================================
+    // GETTERS
+    // =========================================
 
     public String getModuleId() {
 
@@ -109,6 +119,12 @@ public class AlarmRecord {
     }
 
 
+    public AlarmSource getSource() {
+
+        return source;
+    }
+
+
     public AlarmStatus getStatus() {
 
         return status;
@@ -127,9 +143,9 @@ public class AlarmRecord {
     }
 
 
-    // =================================
-    // Acknowledge
-    // =================================
+    // =========================================
+    // ACKNOWLEDGE
+    // =========================================
 
     public void acknowledge() {
 
@@ -137,15 +153,14 @@ public class AlarmRecord {
 
             status = AlarmStatus.ACKNOWLEDGED;
 
-            acknowledgedTime =
-                    LocalDateTime.now();
+            acknowledgedTime = LocalDateTime.now();
         }
     }
 
 
-    // =================================
-    // Clear Alarm
-    // =================================
+    // =========================================
+    // CLEAR
+    // =========================================
 
     public void clear() {
 
@@ -154,15 +169,14 @@ public class AlarmRecord {
 
             status = AlarmStatus.CLEARED;
 
-            clearedTime =
-                    LocalDateTime.now();
+            clearedTime = LocalDateTime.now();
         }
     }
 
 
-    // =================================
-    // Alarm Duration
-    // =================================
+    // =========================================
+    // DURATION
+    // =========================================
 
     public long getDurationSeconds() {
 
@@ -186,9 +200,9 @@ public class AlarmRecord {
     }
 
 
-    // =================================
-    // Display
-    // =================================
+    // =========================================
+    // DISPLAY
+    // =========================================
 
     @Override
     public String toString() {
@@ -200,6 +214,8 @@ public class AlarmRecord {
                 + severity
                 + " | "
                 + type
+                + " | "
+                + source
                 + " | "
                 + message
                 + " | Actual: "

@@ -1,3 +1,8 @@
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class TestMode {
 
     private final MonitoringService monitoringService;
@@ -6,6 +11,7 @@ public class TestMode {
     private final InputHandler inputHandler;
 
     private Transceiver selectedModule;
+
 
     // =================================
     // Test Parameters
@@ -53,9 +59,7 @@ public class TestMode {
 
             printMenu();
 
-            String command =
-                    waitForInput();
-
+            String command = waitForInput();
 
             switch (command.toUpperCase()) {
 
@@ -101,9 +105,7 @@ public class TestMode {
 
                 default:
                     System.out.println();
-                    System.out.println(
-                            "Invalid command."
-                    );
+                    System.out.println("Invalid command.");
             }
         }
     }
@@ -132,23 +134,17 @@ public class TestMode {
         }
 
 
-        temperature =
-                telemetry.getTemperature();
+        temperature = telemetry.getTemperature();
 
-        voltage =
-                telemetry.getVoltage();
+        voltage = telemetry.getVoltage();
 
-        rxPower =
-                telemetry.getRxPower();
+        rxPower = telemetry.getRxPower();
 
-        txPower =
-                telemetry.getTxPower();
+        txPower = telemetry.getTxPower();
 
-        laserCurrent =
-                telemetry.getLaserCurrent();
+        laserCurrent = telemetry.getLaserCurrent();
 
-        wavelength =
-                telemetry.getWavelength();
+        wavelength = telemetry.getWavelength();
     }
 
 
@@ -226,21 +222,13 @@ public class TestMode {
                 "----------------------------------------"
         );
 
-        System.out.println(
-                "[T] VIEW THRESHOLD"
-        );
+        System.out.println("[T] VIEW THRESHOLD");
 
-        System.out.println(
-                "[S] START TEST"
-        );
+        System.out.println("[S] START TEST");
 
-        System.out.println(
-                "[R] RESET PARAMETERS"
-        );
+        System.out.println("[R] RESET PARAMETERS");
 
-        System.out.println(
-                "[0] BACK"
-        );
+        System.out.println("[0] BACK");
 
         System.out.println(
                 "========================================"
@@ -298,13 +286,7 @@ public class TestMode {
             );
 
 
-            // =================================
-            // Temperature
-            // =================================
-
-            System.out.println(
-                    "Temperature"
-            );
+            System.out.println("Temperature");
 
             System.out.println(
                     "  Normal : <= "
@@ -313,15 +295,9 @@ public class TestMode {
             );
 
 
-            // =================================
-            // Voltage
-            // =================================
-
             System.out.println();
 
-            System.out.println(
-                    "Voltage"
-            );
+            System.out.println("Voltage");
 
             System.out.println(
                     "  Normal : "
@@ -332,15 +308,9 @@ public class TestMode {
             );
 
 
-            // =================================
-            // RX Power
-            // =================================
-
             System.out.println();
 
-            System.out.println(
-                    "RX Power"
-            );
+            System.out.println("RX Power");
 
             System.out.println(
                     "  Normal : >= "
@@ -349,15 +319,9 @@ public class TestMode {
             );
 
 
-            // =================================
-            // TX Power
-            // =================================
-
             System.out.println();
 
-            System.out.println(
-                    "TX Power"
-            );
+            System.out.println("TX Power");
 
             System.out.println(
                     "  Normal : "
@@ -368,15 +332,9 @@ public class TestMode {
             );
 
 
-            // =================================
-            // Laser Current
-            // =================================
-
             System.out.println();
 
-            System.out.println(
-                    "Laser Current"
-            );
+            System.out.println("Laser Current");
 
             System.out.println(
                     "  Normal : "
@@ -387,15 +345,9 @@ public class TestMode {
             );
 
 
-            // =================================
-            // Wavelength
-            // =================================
-
             System.out.println();
 
-            System.out.println(
-                    "Wavelength"
-            );
+            System.out.println("Wavelength");
 
             System.out.println(
                     "  Normal : "
@@ -406,31 +358,22 @@ public class TestMode {
             );
 
 
-            // =================================
-            // Back
-            // =================================
-
             System.out.println();
 
             System.out.println(
                     "----------------------------------------"
             );
 
-            System.out.println(
-                    "[0] BACK"
-            );
+            System.out.println("[0] BACK");
 
             System.out.println(
                     "----------------------------------------"
             );
 
-            System.out.print(
-                    "Select : "
-            );
+            System.out.print("Select : ");
 
 
-            String command =
-                    waitForInput();
+            String command = waitForInput();
 
 
             if (command.equals("0")) {
@@ -474,17 +417,13 @@ public class TestMode {
         );
 
 
-        String input =
-                waitForInput();
+        String input = waitForInput();
 
 
         try {
 
-            double value =
+            temperature =
                     Double.parseDouble(input);
-
-
-            temperature = value;
 
 
             System.out.println();
@@ -543,17 +482,13 @@ public class TestMode {
         );
 
 
-        String input =
-                waitForInput();
+        String input = waitForInput();
 
 
         try {
 
-            double value =
+            voltage =
                     Double.parseDouble(input);
-
-
-            voltage = value;
 
 
             System.out.println();
@@ -612,17 +547,13 @@ public class TestMode {
         );
 
 
-        String input =
-                waitForInput();
+        String input = waitForInput();
 
 
         try {
 
-            double value =
+            rxPower =
                     Double.parseDouble(input);
-
-
-            rxPower = value;
 
 
             System.out.println();
@@ -681,17 +612,13 @@ public class TestMode {
         );
 
 
-        String input =
-                waitForInput();
+        String input = waitForInput();
 
 
         try {
 
-            double value =
+            txPower =
                     Double.parseDouble(input);
-
-
-            txPower = value;
 
 
             System.out.println();
@@ -750,17 +677,13 @@ public class TestMode {
         );
 
 
-        String input =
-                waitForInput();
+        String input = waitForInput();
 
 
         try {
 
-            double value =
+            laserCurrent =
                     Double.parseDouble(input);
-
-
-            laserCurrent = value;
 
 
             System.out.println();
@@ -819,17 +742,13 @@ public class TestMode {
         );
 
 
-        String input =
-                waitForInput();
+        String input = waitForInput();
 
 
         try {
 
-            double value =
+            wavelength =
                     Double.parseDouble(input);
-
-
-            wavelength = value;
 
 
             System.out.println();
@@ -892,15 +811,9 @@ public class TestMode {
         );
 
 
-        // =================================
-        // Show Parameters
-        // =================================
-
         System.out.println();
 
-        System.out.println(
-                "Test Parameters:"
-        );
+        System.out.println("Test Parameters:");
 
         System.out.println(
                 "Temperature   : "
@@ -974,7 +887,7 @@ public class TestMode {
 
 
         // =================================
-        // Save History
+        // Save Monitoring History
         // =================================
 
         historyService.addHistory(
@@ -984,13 +897,56 @@ public class TestMode {
 
 
         // =================================
-        // Process Alarm
+        // Convert Alarm -> AlarmRecord
+        // TEST SOURCE
         // =================================
 
-        alarmHistoryService.processAlarms(
-                selectedModule,
-                report.getAlarms()
-        );
+        List<AlarmRecord> testAlarms =
+                new ArrayList<>();
+
+
+        for (Alarm alarm : report.getAlarms()) {
+
+            AlarmRecord alarmRecord =
+                    new AlarmRecord(
+
+                            selectedModule.getModuleId(),
+
+                            LocalDateTime.now(),
+
+                            alarm.getType(),
+
+                            alarm.getSeverity(),
+
+                            alarm.getMessage(),
+
+                            alarm.getActualValue(),
+
+                            alarm.getThreshold(),
+
+                            AlarmSource.TEST
+                    );
+
+
+            testAlarms.add(
+                    alarmRecord
+            );
+        }
+
+
+        // =================================
+        // Save Test Alarm History
+        // =================================
+
+        if (!testAlarms.isEmpty()) {
+
+            alarmHistoryService.addAlarms(
+
+                    selectedModule,
+
+                    testAlarms
+            );
+        }
 
 
         // =================================
@@ -1129,6 +1085,10 @@ public class TestMode {
                 System.out.println(
                         "  Threshold  : "
                                 + alarm.getThreshold()
+                );
+
+                System.out.println(
+                        "  Source     : TEST"
                 );
             }
         }

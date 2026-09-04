@@ -1,25 +1,29 @@
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class TestModeWindow {
 
 
     // =========================================
-    // SYSTEM COMPONENTS
+    // SERVICES
     // =========================================
 
-    private final Transceiver selectedModule;
+    private final Transceiver module;
 
     private final MonitoringService monitoringService;
 
@@ -27,12 +31,7 @@ public class TestModeWindow {
 
     private final AlarmHistoryService alarmHistoryService;
 
-
-    // =========================================
-    // CALLBACK
-    // =========================================
-
-    private final Runnable dashboardUpdater;
+    private final Runnable refreshDashboard;
 
 
     // =========================================
@@ -43,13 +42,20 @@ public class TestModeWindow {
 
     private TextField voltageField;
 
+    private TextField txPowerField;
+
     private TextField rxPowerField;
 
-    private TextField txPowerField;
+    private TextField wavelengthField;
 
     private TextField laserCurrentField;
 
-    private TextField wavelengthField;
+
+    // =========================================
+    // RESULT LABEL
+    // =========================================
+
+    private Label resultLabel;
 
 
     // =========================================
@@ -58,7 +64,7 @@ public class TestModeWindow {
 
     public TestModeWindow(
 
-            Transceiver selectedModule,
+            Transceiver module,
 
             MonitoringService monitoringService,
 
@@ -66,33 +72,23 @@ public class TestModeWindow {
 
             AlarmHistoryService alarmHistoryService,
 
-            Runnable dashboardUpdater
+            Runnable refreshDashboard
     ) {
 
+        this.module = module;
 
-        this.selectedModule =
-                selectedModule;
+        this.monitoringService = monitoringService;
 
+        this.monitoringHistoryService = monitoringHistoryService;
 
-        this.monitoringService =
-                monitoringService;
+        this.alarmHistoryService = alarmHistoryService;
 
-
-        this.monitoringHistoryService =
-                monitoringHistoryService;
-
-
-        this.alarmHistoryService =
-                alarmHistoryService;
-
-
-        this.dashboardUpdater =
-                dashboardUpdater;
+        this.refreshDashboard = refreshDashboard;
     }
 
 
     // =========================================
-    // OPEN WINDOW
+    // SHOW WINDOW
     // =========================================
 
     public void show() {
@@ -102,170 +98,391 @@ public class TestModeWindow {
                 new Stage();
 
 
+        BorderPane root =
+                new BorderPane();
+
+
+        root.setPadding(
+                new Insets(25)
+        );
+
+
+        root.setStyle(
+                "-fx-background-color: #f4f6f9;"
+        );
+
+
+        // HEADER
+
+        root.setTop(
+                createHeader()
+        );
+
+
+        // CENTER
+
+        root.setCenter(
+                createTestForm()
+        );
+
+
+        // BUTTONS
+
+        root.setBottom(
+                createButtonPanel(stage)
+        );
+
+
+        Scene scene =
+                new Scene(
+                        root,
+                        650,
+                        700
+                );
+
+
         stage.setTitle(
                 "Test Mode - "
-                        + selectedModule.getModuleId()
+                        + module.getModuleId()
         );
 
 
-        // =========================================
-        // MODULE INFORMATION
-        // =========================================
+        stage.setScene(scene);
 
-        Label moduleLabel =
-                new Label(
-                        "Module : "
-                                + selectedModule.getModuleId()
-                );
+        stage.show();
+    }
 
 
-        Label modelLabel =
-                new Label(
-                        "Model : "
-                                + selectedModule.getModel()
-                );
+    // =========================================
+    // CREATE HEADER
+    // =========================================
 
+    private VBox createHeader() {
 
-        moduleLabel.setStyle(
-                "-fx-font-size: 14px;" +
-                        "-fx-font-weight: bold;"
-        );
-
-
-        modelLabel.setStyle(
-                "-fx-font-size: 14px;" +
-                        "-fx-font-weight: bold;"
-        );
-
-
-        HBox moduleInfo =
-                new HBox(
-                        40,
-                        moduleLabel,
-                        modelLabel
-                );
-
-
-        moduleInfo.setAlignment(
-                Pos.CENTER
-        );
-
-
-        // =========================================
-        // TITLE
-        // =========================================
 
         Label title =
                 new Label(
-                        "TEST MODE"
+                        "🧪 TEST MODE"
                 );
 
 
         title.setStyle(
-                "-fx-font-size: 24px;" +
-                        "-fx-font-weight: bold;"
+                "-fx-font-size: 26px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #2c3e50;"
         );
 
 
-        Label description =
+        Label moduleInfo =
                 new Label(
-                        "Modify telemetry parameters manually and verify monitoring behavior."
+
+                        "Module: "
+
+                                + module.getModuleId()
+
+                                + " | "
+
+                                + module.getModel()
                 );
 
 
-        description.setStyle(
-                "-fx-font-size: 13px;" +
-                        "-fx-text-fill: gray;"
+        moduleInfo.setStyle(
+                "-fx-font-size: 15px;"
+                        + "-fx-text-fill: #7f8c8d;"
         );
 
 
-        // =========================================
-        // CREATE INPUT FIELDS
-        // =========================================
+        Label warning =
+                new Label(
+                        "⚠ Alarms generated in this mode will be marked as TEST"
+                );
 
-        createInputFields();
+
+        warning.setStyle(
+                "-fx-font-size: 13px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #e67e22;"
+        );
 
 
-        // =========================================
-        // FORM
-        // =========================================
+        VBox header =
+                new VBox(
 
-        GridPane form =
+                        6,
+
+                        title,
+
+                        moduleInfo,
+
+                        warning,
+
+                        new Separator()
+                );
+
+
+        header.setPadding(
+                new Insets(
+                        0,
+                        0,
+                        20,
+                        0
+                )
+        );
+
+
+        return header;
+    }
+
+
+    // =========================================
+    // CREATE TEST FORM
+    // =========================================
+
+    private VBox createTestForm() {
+
+
+        Label title =
+                new Label(
+                        "Inject Telemetry Values"
+                );
+
+
+        title.setStyle(
+                "-fx-font-size: 18px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #34495e;"
+        );
+
+
+        GridPane grid =
                 new GridPane();
 
 
-        form.setHgap(15);
+        grid.setHgap(15);
 
-        form.setVgap(15);
+        grid.setVgap(15);
 
-        form.setAlignment(
-                Pos.CENTER
+        grid.setPadding(
+                new Insets(20)
         );
 
 
-        // =========================================
+        // =====================================
+        // TEMPERATURE
+        // =====================================
+
+        temperatureField =
+                new TextField();
+
+        temperatureField.setPromptText(
+                "Example: 90.0"
+        );
+
+
+        // =====================================
+        // VOLTAGE
+        // =====================================
+
+        voltageField =
+                new TextField();
+
+        voltageField.setPromptText(
+                "Example: 3.2"
+        );
+
+
+        // =====================================
+        // TX POWER
+        // =====================================
+
+        txPowerField =
+                new TextField();
+
+        txPowerField.setPromptText(
+                "Example: -3.0"
+        );
+
+
+        // =====================================
+        // RX POWER
+        // =====================================
+
+        rxPowerField =
+                new TextField();
+
+        rxPowerField.setPromptText(
+                "Example: -12.0"
+        );
+
+
+        // =====================================
+        // WAVELENGTH
+        // =====================================
+
+        wavelengthField =
+                new TextField();
+
+        wavelengthField.setPromptText(
+                "Example: 1310"
+        );
+
+
+        // =====================================
+        // LASER CURRENT
+        // =====================================
+
+        laserCurrentField =
+                new TextField();
+
+        laserCurrentField.setPromptText(
+                "Example: 75.0"
+        );
+
+
+        // =====================================
         // ADD FORM ROWS
-        // =========================================
+        // =====================================
 
-        addFormRow(
-                form,
+        addRow(
+                grid,
                 0,
-                "Temperature",
-                temperatureField,
-                "°C"
+                "Temperature (°C)",
+                temperatureField
         );
 
 
-        addFormRow(
-                form,
+        addRow(
+                grid,
                 1,
-                "Voltage",
-                voltageField,
-                "V"
+                "Voltage (V)",
+                voltageField
         );
 
 
-        addFormRow(
-                form,
+        addRow(
+                grid,
                 2,
-                "RX Power",
-                rxPowerField,
-                "dBm"
+                "TX Power (dBm)",
+                txPowerField
         );
 
 
-        addFormRow(
-                form,
+        addRow(
+                grid,
                 3,
-                "TX Power",
-                txPowerField,
-                "dBm"
+                "RX Power (dBm)",
+                rxPowerField
         );
 
 
-        addFormRow(
-                form,
+        addRow(
+                grid,
                 4,
-                "Laser Current",
-                laserCurrentField,
-                "mA"
+                "Wavelength (nm)",
+                wavelengthField
         );
 
 
-        addFormRow(
-                form,
+        addRow(
+                grid,
                 5,
-                "Wavelength",
-                wavelengthField,
-                "nm"
+                "Laser Current (mA)",
+                laserCurrentField
         );
 
 
-        // =========================================
-        // BUTTONS
-        // =========================================
+        // =====================================
+        // RESULT
+        // =====================================
 
-        Button runTestButton =
+        resultLabel =
+                new Label(
+                        "Ready for test"
+                );
+
+
+        resultLabel.setStyle(
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #7f8c8d;"
+        );
+
+
+        VBox form =
+                new VBox(
+
+                        10,
+
+                        title,
+
+                        grid,
+
+                        resultLabel
+                );
+
+
+        return form;
+    }
+
+
+    // =========================================
+    // ADD ROW
+    // =========================================
+
+    private void addRow(
+
+            GridPane grid,
+
+            int row,
+
+            String labelText,
+
+            TextField field
+    ) {
+
+
+        Label label =
+                new Label(
+                        labelText
+                );
+
+
+        label.setStyle(
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+        );
+
+
+        field.setPrefWidth(
+                350
+        );
+
+
+        grid.add(
+                label,
+                0,
+                row
+        );
+
+
+        grid.add(
+                field,
+                1,
+                row
+        );
+    }
+
+
+    // =========================================
+    // BUTTON PANEL
+    // =========================================
+
+    private HBox createButtonPanel(
+            Stage stage
+    ) {
+
+
+        Button runButton =
                 new Button(
                         "▶ RUN TEST"
                 );
@@ -273,329 +490,91 @@ public class TestModeWindow {
 
         Button resetButton =
                 new Button(
-                        "↻ RESET"
+                        "↺ RESET"
                 );
 
 
         Button closeButton =
                 new Button(
-                        "✕ CLOSE"
+                        "CLOSE"
                 );
 
 
-        runTestButton.setPrefWidth(
-                130
+        String buttonStyle =
+
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-padding: 10 18;"
+                        + "-fx-background-radius: 8;"
+                        + "-fx-cursor: hand;"
+                        + "-fx-background-color: white;"
+                        + "-fx-border-color: #dcdde1;"
+                        + "-fx-border-radius: 8;";
+
+
+        runButton.setStyle(
+                buttonStyle
+        );
+
+        resetButton.setStyle(
+                buttonStyle
+        );
+
+        closeButton.setStyle(
+                buttonStyle
         );
 
 
-        resetButton.setPrefWidth(
-                100
-        );
+        // RUN TEST
 
-
-        closeButton.setPrefWidth(
-                100
-        );
-
-
-        // =========================================
-        // BUTTON ACTIONS
-        // =========================================
-
-        runTestButton.setOnAction(
+        runButton.setOnAction(
                 event -> runTest()
         );
 
 
+        // RESET
+
         resetButton.setOnAction(
-                event -> resetParameters()
+                event -> resetFields()
         );
 
+
+        // CLOSE
 
         closeButton.setOnAction(
                 event -> stage.close()
         );
 
 
-        HBox buttonBox =
+        HBox buttons =
                 new HBox(
-                        15,
-                        runTestButton,
+
+                        10,
+
+                        runButton,
+
                         resetButton,
+
                         closeButton
                 );
 
 
-        buttonBox.setAlignment(
-                Pos.CENTER
+        buttons.setAlignment(
+                Pos.CENTER_RIGHT
         );
 
 
-        // =========================================
-        // ROOT
-        // =========================================
-
-        VBox root =
-                new VBox(
-                        20,
-                        title,
-                        description,
-                        moduleInfo,
-                        form,
-                        buttonBox
-                );
-
-
-        root.setAlignment(
-                Pos.CENTER
-        );
-
-
-        root.setPadding(
+        buttons.setPadding(
                 new Insets(
-                        30
+                        20,
+                        0,
+                        0,
+                        0
                 )
         );
 
 
-        // =========================================
-        // SCENE
-        // =========================================
-
-        Scene scene =
-                new Scene(
-                        root,
-                        600,
-                        550
-                );
-
-
-        stage.setScene(
-                scene
-        );
-
-
-        // =========================================
-        // MODAL WINDOW
-        // =========================================
-
-        stage.initModality(
-                Modality.APPLICATION_MODAL
-        );
-
-
-        stage.showAndWait();
-    }
-
-
-    // =========================================
-    // CREATE INPUT FIELDS
-    // =========================================
-
-    private void createInputFields() {
-
-
-        Telemetry telemetry =
-                selectedModule.getTelemetry();
-
-
-        // =========================================
-        // DEFAULT VALUES
-        // =========================================
-
-        double temperature = 40.0;
-
-        double voltage = 3.30;
-
-        double rxPower = -4.0;
-
-        double txPower = -2.0;
-
-        double laserCurrent = 50.0;
-
-        double wavelength = 1310.0;
-
-
-        // =========================================
-        // LOAD CURRENT TELEMETRY
-        // =========================================
-
-        if (telemetry != null) {
-
-
-            temperature =
-                    telemetry.getTemperature();
-
-
-            voltage =
-                    telemetry.getVoltage();
-
-
-            rxPower =
-                    telemetry.getRxPower();
-
-
-            txPower =
-                    telemetry.getTxPower();
-
-
-            laserCurrent =
-                    telemetry.getLaserCurrent();
-
-
-            wavelength =
-                    telemetry.getWavelength();
-        }
-
-
-        // =========================================
-        // CREATE TEXT FIELDS
-        // =========================================
-
-        temperatureField =
-                new TextField(
-                        String.valueOf(
-                                temperature
-                        )
-                );
-
-
-        voltageField =
-                new TextField(
-                        String.valueOf(
-                                voltage
-                        )
-                );
-
-
-        rxPowerField =
-                new TextField(
-                        String.valueOf(
-                                rxPower
-                        )
-                );
-
-
-        txPowerField =
-                new TextField(
-                        String.valueOf(
-                                txPower
-                        )
-                );
-
-
-        laserCurrentField =
-                new TextField(
-                        String.valueOf(
-                                laserCurrent
-                        )
-                );
-
-
-        wavelengthField =
-                new TextField(
-                        String.valueOf(
-                                wavelength
-                        )
-                );
-
-
-        // =========================================
-        // FIELD SIZE
-        // =========================================
-
-        temperatureField.setPrefWidth(
-                150
-        );
-
-
-        voltageField.setPrefWidth(
-                150
-        );
-
-
-        rxPowerField.setPrefWidth(
-                150
-        );
-
-
-        txPowerField.setPrefWidth(
-                150
-        );
-
-
-        laserCurrentField.setPrefWidth(
-                150
-        );
-
-
-        wavelengthField.setPrefWidth(
-                150
-        );
-    }
-
-
-    // =========================================
-    // ADD FORM ROW
-    // =========================================
-
-    private void addFormRow(
-
-            GridPane form,
-
-            int row,
-
-            String parameter,
-
-            TextField field,
-
-            String unit
-    ) {
-
-
-        Label parameterLabel =
-                new Label(
-                        parameter
-                );
-
-
-        parameterLabel.setStyle(
-                "-fx-font-size: 14px;" +
-                        "-fx-font-weight: bold;"
-        );
-
-
-        Label unitLabel =
-                new Label(
-                        unit
-                );
-
-
-        unitLabel.setStyle(
-                "-fx-font-size: 13px;" +
-                        "-fx-text-fill: gray;"
-        );
-
-
-        form.add(
-                parameterLabel,
-                0,
-                row
-        );
-
-
-        form.add(
-                field,
-                1,
-                row
-        );
-
-
-        form.add(
-                unitLabel,
-                2,
-                row
-        );
+        return buttons;
     }
 
 
@@ -609,9 +588,9 @@ public class TestModeWindow {
         try {
 
 
-            // =========================================
-            // READ VALUES
-            // =========================================
+            // =====================================
+            // READ INPUT VALUES
+            // =====================================
 
             double temperature =
                     Double.parseDouble(
@@ -629,14 +608,6 @@ public class TestModeWindow {
                     );
 
 
-            double rxPower =
-                    Double.parseDouble(
-                            rxPowerField
-                                    .getText()
-                                    .trim()
-                    );
-
-
             double txPower =
                     Double.parseDouble(
                             txPowerField
@@ -645,9 +616,9 @@ public class TestModeWindow {
                     );
 
 
-            double laserCurrent =
+            double rxPower =
                     Double.parseDouble(
-                            laserCurrentField
+                            rxPowerField
                                     .getText()
                                     .trim()
                     );
@@ -661,14 +632,20 @@ public class TestModeWindow {
                     );
 
 
-            // =========================================
-            // CREATE TEST TELEMETRY
-            // =========================================
+            double laserCurrent =
+                    Double.parseDouble(
+                            laserCurrentField
+                                    .getText()
+                                    .trim()
+                    );
 
-            Telemetry testTelemetry =
+
+            // =====================================
+            // CREATE TELEMETRY
+            // =====================================
+
+            Telemetry telemetry =
                     new Telemetry(
-
-                            wavelength,
 
                             temperature,
 
@@ -678,370 +655,356 @@ public class TestModeWindow {
 
                             rxPower,
 
+                            wavelength,
+
                             laserCurrent
                     );
 
 
-            // =========================================
+            // =====================================
             // UPDATE MODULE
-            // =========================================
+            // =====================================
 
-            selectedModule.updateTelemetry(
-                    testTelemetry
+            module.updateTelemetry(
+                    telemetry
             );
 
 
-            // =========================================
-            // MONITORING
-            // =========================================
+            // =====================================
+            // RUN MONITORING
+            // =====================================
 
             MonitoringReport report =
                     monitoringService.monitor(
-                            selectedModule
+                            module
                     );
 
 
-            // =========================================
+            // =====================================
             // SAVE MONITORING HISTORY
-            // =========================================
+            // =====================================
 
-            monitoringHistoryService.addHistory(
+            saveMonitoringHistory(
 
-                    selectedModule,
+                    telemetry,
 
-                    report.getStatus()
-            );
-
-
-            // =========================================
-            // PROCESS ALARMS
-            // =========================================
-
-            alarmHistoryService.processAlarms(
-
-                    selectedModule,
-
-                    report.getAlarms()
-            );
-
-
-            // =========================================
-            // UPDATE DASHBOARD
-            // =========================================
-
-            dashboardUpdater.run();
-
-
-            // =========================================
-            // SHOW RESULT
-            // =========================================
-
-            showTestResult(
                     report
             );
 
 
-        } catch (
-                NumberFormatException e
-        ) {
+            // =====================================
+            // CREATE TEST ALARMS
+            // =====================================
+
+            List<AlarmRecord> testAlarms =
+                    createTestAlarms(
+                            telemetry
+                    );
 
 
-            showError(
-                    "Invalid Input",
-                    "Please enter valid numeric values."
-            );
-        }
-    }
+            // =====================================
+            // SAVE ALARM HISTORY
+            // =====================================
+
+            if (!testAlarms.isEmpty()) {
 
 
-    // =========================================
-    // RESET PARAMETERS
-    // =========================================
+                alarmHistoryService.addAlarms(
 
-    private void resetParameters() {
+                        module,
 
-
-        Telemetry telemetry =
-                selectedModule.getTelemetry();
+                        testAlarms
+                );
+            }
 
 
-        if (telemetry == null) {
+            // =====================================
+            // SHOW RESULT
+            // =====================================
 
-            temperatureField.setText(
-                    "40.0"
-            );
-
-
-            voltageField.setText(
-                    "3.30"
-            );
+            if (testAlarms.isEmpty()) {
 
 
-            rxPowerField.setText(
-                    "-4.0"
-            );
+                resultLabel.setText(
 
-
-            txPowerField.setText(
-                    "-2.0"
-            );
-
-
-            laserCurrentField.setText(
-                    "50.0"
-            );
-
-
-            wavelengthField.setText(
-                    "1310.0"
-            );
-
-
-            return;
-        }
-
-
-        temperatureField.setText(
-                String.valueOf(
-                        telemetry.getTemperature()
-                )
-        );
-
-
-        voltageField.setText(
-                String.valueOf(
-                        telemetry.getVoltage()
-                )
-        );
-
-
-        rxPowerField.setText(
-                String.valueOf(
-                        telemetry.getRxPower()
-                )
-        );
-
-
-        txPowerField.setText(
-                String.valueOf(
-                        telemetry.getTxPower()
-                )
-        );
-
-
-        laserCurrentField.setText(
-                String.valueOf(
-                        telemetry.getLaserCurrent()
-                )
-        );
-
-
-        wavelengthField.setText(
-                String.valueOf(
-                        telemetry.getWavelength()
-                )
-        );
-    }
-
-
-    // =========================================
-    // SHOW TEST RESULT
-    // =========================================
-
-    private void showTestResult(
-            MonitoringReport report
-    ) {
-
-
-        Alert alert =
-                new Alert(
-                        Alert.AlertType.INFORMATION
+                        "✓ TEST PASSED - No Alarm Generated"
                 );
 
 
-        alert.setTitle(
-                "Test Result"
-        );
+                resultLabel.setStyle(
+
+                        "-fx-font-size: 14px;"
+                                + "-fx-font-weight: bold;"
+                                + "-fx-text-fill: #27ae60;"
+                );
+            }
+
+            else {
 
 
-        alert.setHeaderText(
-                "Monitoring Result : "
-                        + report.getStatus()
-        );
+                resultLabel.setText(
 
+                        "⚠ TEST COMPLETED - "
 
-        StringBuilder result =
-                new StringBuilder();
+                                + testAlarms.size()
 
-
-        result.append(
-                "Module : "
-        );
-
-
-        result.append(
-                selectedModule.getModuleId()
-        );
-
-
-        result.append(
-                "\n"
-        );
-
-
-        result.append(
-                "Model : "
-        );
-
-
-        result.append(
-                selectedModule.getModel()
-        );
-
-
-        result.append(
-                "\n\n"
-        );
-
-
-        if (
-                report.getAlarms().isEmpty()
-        ) {
-
-
-            result.append(
-                    "ALARM : None"
-            );
-
-
-        } else {
-
-
-            result.append(
-                    "ALARM COUNT : "
-            );
-
-
-            result.append(
-                    report.getAlarms().size()
-            );
-
-
-            result.append(
-                    "\n\n"
-            );
-
-
-            for (
-                    Alarm alarm :
-                    report.getAlarms()
-            ) {
-
-
-                result.append(
-                        "⚠ "
+                                + " Alarm(s) Generated"
                 );
 
 
-                result.append(
-                        alarm.getType()
+                resultLabel.setStyle(
+
+                        "-fx-font-size: 14px;"
+                                + "-fx-font-weight: bold;"
+                                + "-fx-text-fill: #e74c3c;"
                 );
+            }
 
 
-                result.append(
-                        "\n"
-                );
+            // =====================================
+            // REFRESH DASHBOARD
+            // =====================================
 
+            if (refreshDashboard != null) {
 
-                result.append(
-                        "Severity : "
-                );
-
-
-                result.append(
-                        alarm.getSeverity()
-                );
-
-
-                result.append(
-                        "\n"
-                );
-
-
-                result.append(
-                        "Actual : "
-                );
-
-
-                result.append(
-                        alarm.getActualValue()
-                );
-
-
-                result.append(
-                        "\n"
-                );
-
-
-                result.append(
-                        "Threshold : "
-                );
-
-
-                result.append(
-                        alarm.getThreshold()
-                );
-
-
-                result.append(
-                        "\n\n"
-                );
+                refreshDashboard.run();
             }
         }
 
 
-        alert.setContentText(
-                result.toString()
-        );
+        catch (NumberFormatException exception) {
 
 
-        alert.showAndWait();
+            resultLabel.setText(
+
+                    "⚠ Invalid input. Please enter valid numeric values."
+            );
+
+
+            resultLabel.setStyle(
+
+                    "-fx-font-size: 14px;"
+                            + "-fx-font-weight: bold;"
+                            + "-fx-text-fill: #e74c3c;"
+            );
+        }
     }
 
 
     // =========================================
-    // SHOW ERROR
+    // CREATE TEST ALARMS
     // =========================================
 
-    private void showError(
-
-            String title,
-
-            String message
+    private List<AlarmRecord> createTestAlarms(
+            Telemetry telemetry
     ) {
 
 
-        Alert alert =
-                new Alert(
-                        Alert.AlertType.ERROR
+        List<AlarmRecord> alarms =
+                new ArrayList<>();
+
+
+        // =====================================
+        // TEMPERATURE HIGH
+        // =====================================
+
+        if (telemetry.getTemperature() > 85.0) {
+
+
+            alarms.add(
+
+                    new AlarmRecord(
+
+                            module.getModuleId(),
+
+                            LocalDateTime.now(),
+
+                            AlarmType.TEMPERATURE_HIGH,
+
+                            AlarmSeverity.CRITICAL,
+
+                            "Temperature exceeded maximum limit",
+
+                            telemetry.getTemperature(),
+
+                            85.0,
+
+                            AlarmSource.TEST
+                    )
+            );
+        }
+
+
+        // =====================================
+        // VOLTAGE LOW
+        // =====================================
+
+        if (telemetry.getVoltage() < 3.0) {
+
+
+            alarms.add(
+
+                    new AlarmRecord(
+
+                            module.getModuleId(),
+
+                            LocalDateTime.now(),
+
+                            AlarmType.VOLTAGE_LOW,
+
+                            AlarmSeverity.WARNING,
+
+                            "Voltage below minimum limit",
+
+                            telemetry.getVoltage(),
+
+                            3.0,
+
+                            AlarmSource.TEST
+                    )
+            );
+        }
+
+
+        // =====================================
+        // VOLTAGE HIGH
+        // =====================================
+
+        if (telemetry.getVoltage() > 3.6) {
+
+
+            alarms.add(
+
+                    new AlarmRecord(
+
+                            module.getModuleId(),
+
+                            LocalDateTime.now(),
+
+                            AlarmType.VOLTAGE_HIGH,
+
+                            AlarmSeverity.WARNING,
+
+                            "Voltage exceeded maximum limit",
+
+                            telemetry.getVoltage(),
+
+                            3.6,
+
+                            AlarmSource.TEST
+                    )
+            );
+        }
+
+
+        // =====================================
+        // RX POWER LOW
+        // =====================================
+
+        if (telemetry.getRxPower() < -10.0) {
+
+
+            alarms.add(
+
+                    new AlarmRecord(
+
+                            module.getModuleId(),
+
+                            LocalDateTime.now(),
+
+                            AlarmType.RX_POWER_LOW,
+
+                            AlarmSeverity.WARNING,
+
+                            "RX Optical Power below minimum limit",
+
+                            telemetry.getRxPower(),
+
+                            -10.0,
+
+                            AlarmSource.TEST
+                    )
+            );
+        }
+
+
+        return alarms;
+    }
+
+
+    // =========================================
+    // SAVE MONITORING HISTORY
+    // =========================================
+
+    private void saveMonitoringHistory(
+
+            Telemetry telemetry,
+
+            MonitoringReport report
+    ) {
+
+
+        MonitoringRecord record =
+                new MonitoringRecord(
+
+                        module.getModuleId(),
+
+                        LocalDateTime.now(),
+
+                        telemetry.getTemperature(),
+
+                        telemetry.getVoltage(),
+
+                        telemetry.getRxPower(),
+
+                        telemetry.getTxPower(),
+
+                        telemetry.getLaserCurrent(),
+
+                        "TEST | "
+                                + report.getStatus()
                 );
 
 
-        alert.setTitle(
-                title
+        monitoringHistoryService.addHistory(
+
+                module,
+
+                record
+        );
+    }
+
+
+    // =========================================
+    // RESET FIELDS
+    // =========================================
+
+    private void resetFields() {
+
+
+        temperatureField.clear();
+
+        voltageField.clear();
+
+        txPowerField.clear();
+
+        rxPowerField.clear();
+
+        wavelengthField.clear();
+
+        laserCurrentField.clear();
+
+
+        resultLabel.setText(
+                "Ready for test"
         );
 
 
-        alert.setHeaderText(
-                null
+        resultLabel.setStyle(
+
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #7f8c8d;"
         );
-
-
-        alert.setContentText(
-                message
-        );
-
-
-        alert.showAndWait();
     }
 }

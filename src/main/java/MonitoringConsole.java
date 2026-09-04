@@ -5,28 +5,37 @@ import java.util.Scanner;
 public class MonitoringConsole {
 
     private final MonitoringHistoryService historyService;
+
     private final List<Transceiver> modules;
+
     private final Scanner scanner;
 
 
-    // =================================
-    // Constructor
-    // =================================
+    // =========================================
+    // CONSTRUCTOR
+    // =========================================
 
     public MonitoringConsole(
+
             MonitoringHistoryService historyService,
+
             List<Transceiver> modules
     ) {
 
-        this.historyService = historyService;
-        this.modules = modules;
-        this.scanner = new Scanner(System.in);
+        this.historyService =
+                historyService;
+
+        this.modules =
+                modules;
+
+        this.scanner =
+                new Scanner(System.in);
     }
 
 
-    // =================================
-    // History Menu
-    // =================================
+    // =========================================
+    // HISTORY MENU
+    // =========================================
 
     public void showHistoryMenu() {
 
@@ -45,37 +54,48 @@ public class MonitoringConsole {
             );
 
 
-            // =================================
-            // Show Modules
-            // =================================
+            // =====================================
+            // SHOW MODULES
+            // =====================================
 
-            for (int i = 0; i < modules.size(); i++) {
+            for (
+                    int i = 0;
+                    i < modules.size();
+                    i++
+            ) {
 
                 Transceiver module =
                         modules.get(i);
 
+
                 System.out.println(
+
                         (i + 1)
+
                                 + ". "
+
                                 + module.getModuleId()
+
                                 + " - "
+
                                 + module.getModel()
                 );
             }
 
 
             System.out.println(
-                    "0. Back to Monitoring"
+                    "\n0. Back to Monitoring"
             );
 
 
-            // =================================
-            // User Input
-            // =================================
+            // =====================================
+            // USER INPUT
+            // =====================================
 
             System.out.print(
                     "\nSelect module: "
             );
+
 
             String input =
                     scanner.nextLine();
@@ -83,12 +103,17 @@ public class MonitoringConsole {
 
             int choice;
 
+
             try {
 
                 choice =
-                        Integer.parseInt(input);
+                        Integer.parseInt(
+                                input.trim()
+                        );
 
-            } catch (NumberFormatException e) {
+            }
+
+            catch (NumberFormatException e) {
 
                 System.out.println(
                         "Invalid input."
@@ -98,9 +123,9 @@ public class MonitoringConsole {
             }
 
 
-            // =================================
-            // Back
-            // =================================
+            // =====================================
+            // BACK
+            // =====================================
 
             if (choice == 0) {
 
@@ -108,12 +133,17 @@ public class MonitoringConsole {
             }
 
 
-            // =================================
-            // Invalid Choice
-            // =================================
+            // =====================================
+            // INVALID CHOICE
+            // =====================================
 
-            if (choice < 1
-                    || choice > modules.size()) {
+            if (
+                    choice < 1
+
+                            ||
+
+                            choice > modules.size()
+            ) {
 
                 System.out.println(
                         "Invalid module."
@@ -123,12 +153,14 @@ public class MonitoringConsole {
             }
 
 
-            // =================================
-            // Select Module
-            // =================================
+            // =====================================
+            // SELECT MODULE
+            // =====================================
 
             Transceiver selectedModule =
-                    modules.get(choice - 1);
+                    modules.get(
+                            choice - 1
+                    );
 
 
             showModuleHistory(
@@ -136,9 +168,9 @@ public class MonitoringConsole {
             );
 
 
-            // =================================
-            // After History
-            // =================================
+            // =====================================
+            // AFTER HISTORY MENU
+            // =====================================
 
             while (true) {
 
@@ -168,17 +200,29 @@ public class MonitoringConsole {
                         scanner.nextLine();
 
 
+                // =================================
+                // CONTINUE MONITORING
+                // =================================
+
                 if (menuInput.equals("1")) {
 
                     return;
                 }
 
 
+                // =================================
+                // VIEW ANOTHER MODULE
+                // =================================
+
                 if (menuInput.equals("2")) {
 
                     break;
                 }
 
+
+                // =================================
+                // EXIT
+                // =================================
 
                 if (menuInput.equals("0")) {
 
@@ -194,13 +238,15 @@ public class MonitoringConsole {
     }
 
 
-    // =================================
-    // Show Module History
-    // =================================
+    // =========================================
+    // SHOW MODULE HISTORY
+    // =========================================
 
     private void showModuleHistory(
+
             Transceiver module
     ) {
+
 
         System.out.println(
                 "\n========================================"
@@ -214,30 +260,41 @@ public class MonitoringConsole {
                 "========================================"
         );
 
+
         System.out.println(
+
                 "Module ID : "
+
                         + module.getModuleId()
         );
 
+
         System.out.println(
+
                 "Model     : "
+
                         + module.getModel()
         );
 
 
-        // =================================
-        // Get History
-        // =================================
+        System.out.println(
+                "========================================"
+        );
 
-        List<MonitoringHistory> records =
+
+        // =====================================
+        // GET HISTORY
+        // =====================================
+
+        List<MonitoringRecord> records =
                 historyService.getHistory(
                         module
                 );
 
 
-        // =================================
-        // No History
-        // =================================
+        // =====================================
+        // NO HISTORY
+        // =====================================
 
         if (records.isEmpty()) {
 
@@ -249,33 +306,77 @@ public class MonitoringConsole {
         }
 
 
-        // =================================
-        // Display Records
-        // =================================
+        // =====================================
+        // DISPLAY RECORDS
+        // =====================================
 
         System.out.println();
 
 
         for (
-                MonitoringHistory record :
+
+                MonitoringRecord record :
+
                 records
         ) {
 
+
             System.out.println(
-                    "Status : "
+                    "Time        : "
+                            + record.getTimestamp()
+            );
+
+
+            System.out.println(
+                    "Temperature : "
+                            + record.getTemperature()
+                            + " °C"
+            );
+
+
+            System.out.println(
+                    "Voltage     : "
+                            + record.getVoltage()
+                            + " V"
+            );
+
+
+            System.out.println(
+                    "RX Power    : "
+                            + record.getRxPower()
+                            + " dBm"
+            );
+
+
+            System.out.println(
+                    "TX Power    : "
+                            + record.getTxPower()
+                            + " dBm"
+            );
+
+
+            System.out.println(
+                    "Laser Current : "
+                            + record.getLaserCurrent()
+                            + " mA"
+            );
+
+
+            System.out.println(
+                    "Status      : "
                             + record.getStatus()
             );
 
-            System.out.println(
-                    "Time   : "
-                            + record.getFormattedTime()
-            );
 
             System.out.println(
                     "----------------------------------------"
             );
         }
 
+
+        // =====================================
+        // TOTAL RECORDS
+        // =====================================
 
         System.out.println(
                 "\nTotal Records : "
