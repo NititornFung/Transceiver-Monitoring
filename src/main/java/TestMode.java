@@ -888,11 +888,17 @@ public class TestMode {
 
         // =================================
         // Save Monitoring History
+        //
+        // แก้จากเดิม:
+        // addHistory(selectedModule, report.getStatus())
+        //
+        // เป็นการส่ง Telemetry และ Report ครบ
         // =================================
 
         historyService.addHistory(
                 selectedModule,
-                report.getStatus()
+                testTelemetry,
+                report
         );
 
 

@@ -107,15 +107,6 @@ public class DashboardApplication extends Application {
 
 
     // =====================================================
-    // REAL-TIME MONITORING CONTROL
-    // =====================================================
-
-    private Timeline monitoringTimeline;
-
-    private boolean monitoringRunning = false;
-
-
-    // =====================================================
     // MAIN
     // =====================================================
 
@@ -211,9 +202,7 @@ public class DashboardApplication extends Application {
         // =================================================
 
         Label moduleTitle =
-                new Label(
-                        "MODULE STATUS"
-                );
+                new Label("MODULE STATUS");
 
         moduleTitle.setStyle(
                 "-fx-font-size: 20px;"
@@ -237,12 +226,7 @@ public class DashboardApplication extends Application {
                 Pos.CENTER
         );
 
-
-        for (
-                int i = 0;
-                i < modules.size();
-                i++
-        ) {
+        for (int i = 0; i < modules.size(); i++) {
 
             VBox card =
                     createModuleCard(
@@ -250,14 +234,10 @@ public class DashboardApplication extends Application {
                             i
                     );
 
-            moduleCards[i] =
-                    card;
+            moduleCards[i] = card;
 
-            cardsContainer.getChildren().add(
-                    card
-            );
+            cardsContainer.getChildren().add(card);
         }
-
 
         content.getChildren().add(
                 cardsContainer
@@ -314,9 +294,7 @@ public class DashboardApplication extends Application {
                         + "-fx-text-fill: #7f8c8d;"
         );
 
-        content.getChildren().add(
-                footer
-        );
+        content.getChildren().add(footer);
 
 
         // =================================================
@@ -326,17 +304,11 @@ public class DashboardApplication extends Application {
         ScrollPane scrollPane =
                 new ScrollPane();
 
-        scrollPane.setContent(
-                content
-        );
+        scrollPane.setContent(content);
 
-        scrollPane.setFitToWidth(
-                true
-        );
+        scrollPane.setFitToWidth(true);
 
-        scrollPane.setPannable(
-                true
-        );
+        scrollPane.setPannable(true);
 
         scrollPane.setVbarPolicy(
                 ScrollPane.ScrollBarPolicy.AS_NEEDED
@@ -347,9 +319,11 @@ public class DashboardApplication extends Application {
         );
 
 
-        root.setCenter(
-                scrollPane
-        );
+        // =================================================
+        // SET ROOT
+        // =================================================
+
+        root.setCenter(scrollPane);
 
 
         // =================================================
@@ -367,17 +341,11 @@ public class DashboardApplication extends Application {
                 "Optical Transceiver Monitoring System"
         );
 
-        stage.setMinWidth(
-                1100
-        );
+        stage.setMinWidth(1100);
 
-        stage.setMinHeight(
-                750
-        );
+        stage.setMinHeight(750);
 
-        stage.setScene(
-                scene
-        );
+        stage.setScene(scene);
 
         stage.show();
 
@@ -435,30 +403,17 @@ public class DashboardApplication extends Application {
     private HBox createControlPanel() {
 
 
-        Button startStopButton =
-                new Button(
-                        "⏸ Stop Monitoring"
-                );
-
         Button testModeButton =
-                new Button(
-                        "🧪 Test Mode"
-                );
+                new Button("🧪 Test Mode");
 
         Button monitoringHistoryButton =
-                new Button(
-                        "📊 Monitoring History"
-                );
+                new Button("📊 Monitoring History");
 
         Button alarmHistoryButton =
-                new Button(
-                        "🚨 Alarm History"
-                );
+                new Button("🚨 Alarm History");
 
         Button refreshButton =
-                new Button(
-                        "🔄 Refresh Now"
-                );
+                new Button("🔄 Refresh Now");
 
 
         String buttonStyle =
@@ -472,82 +427,27 @@ public class DashboardApplication extends Application {
                         + "-fx-border-radius: 8;";
 
 
-        startStopButton.setStyle(
-                buttonStyle
-        );
-
-        testModeButton.setStyle(
-                buttonStyle
-        );
-
-        monitoringHistoryButton.setStyle(
-                buttonStyle
-        );
-
-        alarmHistoryButton.setStyle(
-                buttonStyle
-        );
-
-        refreshButton.setStyle(
-                buttonStyle
-        );
+        testModeButton.setStyle(buttonStyle);
+        monitoringHistoryButton.setStyle(buttonStyle);
+        alarmHistoryButton.setStyle(buttonStyle);
+        refreshButton.setStyle(buttonStyle);
 
 
         // ===============================================
-        // START / STOP
-        // ===============================================
-
-        startStopButton.setOnAction(event -> {
-
-            if (monitoringRunning) {
-
-                stopMonitoring();
-
-                startStopButton.setText(
-                        "▶ Start Monitoring"
-                );
-
-            } else {
-
-                startMonitoring();
-
-                startStopButton.setText(
-                        "⏸ Stop Monitoring"
-                );
-            }
-        });
-
-
-        // ===============================================
-        // TEST MODE
+        // BUTTON ACTIONS
         // ===============================================
 
         testModeButton.setOnAction(
                 event -> openTestMode()
         );
 
-
-        // ===============================================
-        // MONITORING HISTORY
-        // ===============================================
-
         monitoringHistoryButton.setOnAction(
                 event -> openMonitoringHistory()
         );
 
-
-        // ===============================================
-        // ALARM HISTORY
-        // ===============================================
-
         alarmHistoryButton.setOnAction(
                 event -> openAlarmHistory()
         );
-
-
-        // ===============================================
-        // REFRESH
-        // ===============================================
 
         refreshButton.setOnAction(
                 event -> updateDashboard()
@@ -557,23 +457,15 @@ public class DashboardApplication extends Application {
         HBox controlPanel =
                 new HBox(
                         12,
-
-                        startStopButton,
-
                         testModeButton,
-
                         monitoringHistoryButton,
-
                         alarmHistoryButton,
-
                         refreshButton
                 );
-
 
         controlPanel.setAlignment(
                 Pos.CENTER_LEFT
         );
-
 
         return controlPanel;
     }
@@ -634,7 +526,10 @@ public class DashboardApplication extends Application {
 
         AlarmHistoryWindow window =
                 new AlarmHistoryWindow(
-                        alarmHistoryService
+
+                        alarmHistoryService,
+
+                        modules
                 );
 
 
@@ -740,9 +635,7 @@ public class DashboardApplication extends Application {
 
 
         statusLabels[index] =
-                new Label(
-                        "● WAITING"
-                );
+                new Label("● WAITING");
 
         statusLabels[index].setStyle(
                 "-fx-font-size: 15px;"
@@ -802,9 +695,7 @@ public class DashboardApplication extends Application {
 
 
         Label title =
-                new Label(
-                        "🚨 ACTIVE ALARMS"
-                );
+                new Label("🚨 ACTIVE ALARMS");
 
         title.setStyle(
                 "-fx-font-size: 20px;"
@@ -814,9 +705,7 @@ public class DashboardApplication extends Application {
 
 
         alarmMessageLabel =
-                new Label(
-                        "✓ No Active Alarm"
-                );
+                new Label("✓ No Active Alarm");
 
         alarmMessageLabel.setStyle(
                 "-fx-font-size: 15px;"
@@ -857,13 +746,9 @@ public class DashboardApplication extends Application {
                 );
 
 
-        xAxis.setLabel(
-                "Time"
-        );
+        xAxis.setLabel("Time");
 
-        yAxis.setLabel(
-                "Voltage (V)"
-        );
+        yAxis.setLabel("Voltage (V)");
 
 
         LineChart<Number, Number> chart =
@@ -877,37 +762,27 @@ public class DashboardApplication extends Application {
                 "⚡ REAL-TIME VOLTAGE MONITORING"
         );
 
-        chart.setAnimated(
-                false
-        );
+        chart.setAnimated(false);
 
-        chart.setPrefHeight(
-                350
-        );
+        chart.setPrefHeight(350);
 
 
         voltageSeries1 =
                 new XYChart.Series<>();
 
-        voltageSeries1.setName(
-                "TX001"
-        );
+        voltageSeries1.setName("TX001");
 
 
         voltageSeries2 =
                 new XYChart.Series<>();
 
-        voltageSeries2.setName(
-                "TX002"
-        );
+        voltageSeries2.setName("TX002");
 
 
         voltageSeries3 =
                 new XYChart.Series<>();
 
-        voltageSeries3.setName(
-                "TX003"
-        );
+        voltageSeries3.setName("TX003");
 
 
         chart.getData().addAll(
@@ -942,13 +817,9 @@ public class DashboardApplication extends Application {
                 );
 
 
-        xAxis.setLabel(
-                "Time"
-        );
+        xAxis.setLabel("Time");
 
-        yAxis.setLabel(
-                "Wavelength (nm)"
-        );
+        yAxis.setLabel("Wavelength (nm)");
 
 
         LineChart<Number, Number> chart =
@@ -962,37 +833,27 @@ public class DashboardApplication extends Application {
                 "📡 REAL-TIME CENTER WAVELENGTH"
         );
 
-        chart.setAnimated(
-                false
-        );
+        chart.setAnimated(false);
 
-        chart.setPrefHeight(
-                350
-        );
+        chart.setPrefHeight(350);
 
 
         wavelengthSeries1 =
                 new XYChart.Series<>();
 
-        wavelengthSeries1.setName(
-                "TX001"
-        );
+        wavelengthSeries1.setName("TX001");
 
 
         wavelengthSeries2 =
                 new XYChart.Series<>();
 
-        wavelengthSeries2.setName(
-                "TX002"
-        );
+        wavelengthSeries2.setName("TX002");
 
 
         wavelengthSeries3 =
                 new XYChart.Series<>();
 
-        wavelengthSeries3.setName(
-                "TX003"
-        );
+        wavelengthSeries3.setName("TX003");
 
 
         chart.getData().addAll(
@@ -1051,13 +912,9 @@ public class DashboardApplication extends Application {
                 "🔬 OPTICAL SPECTRUM ANALYZER"
         );
 
-        chart.setAnimated(
-                false
-        );
+        chart.setAnimated(false);
 
-        chart.setPrefHeight(
-                400
-        );
+        chart.setPrefHeight(400);
 
 
         spectrumSeries =
@@ -1084,7 +941,7 @@ public class DashboardApplication extends Application {
     private void startRealTimeMonitoring() {
 
 
-        monitoringTimeline =
+        Timeline timeline =
                 new Timeline(
 
                         new KeyFrame(
@@ -1096,54 +953,11 @@ public class DashboardApplication extends Application {
                 );
 
 
-        monitoringTimeline.setCycleCount(
+        timeline.setCycleCount(
                 Timeline.INDEFINITE
         );
 
-
-        startMonitoring();
-    }
-
-
-    // =====================================================
-    // START MONITORING
-    // =====================================================
-
-    private void startMonitoring() {
-
-
-        if (monitoringTimeline == null) {
-
-            return;
-        }
-
-
-        monitoringTimeline.play();
-
-
-        monitoringRunning =
-                true;
-    }
-
-
-    // =====================================================
-    // STOP MONITORING
-    // =====================================================
-
-    private void stopMonitoring() {
-
-
-        if (monitoringTimeline == null) {
-
-            return;
-        }
-
-
-        monitoringTimeline.stop();
-
-
-        monitoringRunning =
-                false;
+        timeline.play();
     }
 
 
@@ -1164,11 +978,7 @@ public class DashboardApplication extends Application {
                 new StringBuilder();
 
 
-        for (
-                int i = 0;
-                i < modules.size();
-                i++
-        ) {
+        for (int i = 0; i < modules.size(); i++) {
 
 
             Transceiver module =
@@ -1205,10 +1015,9 @@ public class DashboardApplication extends Application {
             // =============================================
 
             monitoringHistoryService.addHistory(
-
                     module,
-
-                    report
+                    telemetry,
+                    report.getStatus().toString()
             );
 
 
@@ -1217,11 +1026,8 @@ public class DashboardApplication extends Application {
             // =============================================
 
             updateCard(
-
                     i,
-
                     module,
-
                     report
             );
 
@@ -1231,9 +1037,7 @@ public class DashboardApplication extends Application {
             // =============================================
 
             updateVoltageGraph(
-
                     i,
-
                     telemetry.getVoltage()
             );
 
@@ -1243,9 +1047,7 @@ public class DashboardApplication extends Application {
             // =============================================
 
             updateWavelengthGraph(
-
                     i,
-
                     telemetry.getWavelength()
             );
 
@@ -1270,21 +1072,17 @@ public class DashboardApplication extends Application {
                         "⚠ "
                 );
 
-
                 alarmText.append(
                         module.getModuleId()
                 );
-
 
                 alarmText.append(
                         " | "
                 );
 
-
                 alarmText.append(
                         status
                 );
-
 
                 alarmText.append(
                         "\n"
@@ -1294,9 +1092,7 @@ public class DashboardApplication extends Application {
 
 
         updateAlarmPanel(
-
                 hasAlarm,
-
                 alarmText.toString()
         );
 
@@ -1512,14 +1308,12 @@ public class DashboardApplication extends Application {
 
             series =
                     voltageSeries1;
-
         }
 
         else if (moduleIndex == 1) {
 
             series =
                     voltageSeries2;
-
         }
 
         else {
@@ -1566,14 +1360,12 @@ public class DashboardApplication extends Application {
 
             series =
                     wavelengthSeries1;
-
         }
 
         else if (moduleIndex == 1) {
 
             series =
                     wavelengthSeries2;
-
         }
 
         else {

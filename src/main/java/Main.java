@@ -204,6 +204,10 @@ public class Main {
                     );
 
 
+                    // =================================
+                    // Wait for User Input
+                    // =================================
+
                     String menuCommand;
 
 
@@ -446,20 +450,21 @@ public class Main {
 
                 historyService.addHistory(
                         module,
-                        report.getStatus()
+                        module.getTelemetry(),
+                        report
                 );
 
 
                 // =================================
-                // Convert REAL Alarm
-                // Alarm -> AlarmRecord
+                // Save Alarm History
                 // =================================
 
-                List<AlarmRecord> realAlarms =
+                List<AlarmRecord> alarmRecords =
                         new ArrayList<>();
 
 
                 for (Alarm alarm : report.getAlarms()) {
+
 
                     AlarmRecord alarmRecord =
                             new AlarmRecord(
@@ -478,27 +483,27 @@ public class Main {
 
                                     alarm.getThreshold(),
 
-                                    AlarmSource.REAL
+                                    AlarmSource.MONITORING
                             );
 
 
-                    realAlarms.add(
+                    alarmRecords.add(
                             alarmRecord
                     );
                 }
 
 
                 // =================================
-                // Save REAL Alarm History
+                // Add Alarm Records
                 // =================================
 
-                if (!realAlarms.isEmpty()) {
+                if (!alarmRecords.isEmpty()) {
 
                     alarmHistoryService.addAlarms(
 
                             module,
 
-                            realAlarms
+                            alarmRecords
                     );
                 }
 
@@ -624,10 +629,6 @@ public class Main {
                         System.out.println(
                                 "  Threshold  : "
                                         + alarm.getThreshold()
-                        );
-
-                        System.out.println(
-                                "  Source     : REAL"
                         );
                     }
                 }
@@ -869,7 +870,7 @@ public class Main {
             // =================================
 
             List<AlarmRecord> records =
-                    alarmHistoryService.getAlarmHistory(
+                    alarmHistoryService.getHistory(
                             module
                     );
 
@@ -945,7 +946,8 @@ public class Main {
 
                         System.out.println(
                                 "ACK Time  : "
-                                        + record.getAcknowledgedTime()
+                                        + record
+                                        .getAcknowledgedTime()
                         );
                     }
 
@@ -957,14 +959,16 @@ public class Main {
 
                         System.out.println(
                                 "Clear Time: "
-                                        + record.getClearedTime()
+                                        + record
+                                        .getClearedTime()
                         );
                     }
 
 
                     System.out.println(
                             "Duration  : "
-                                    + record.getDurationSeconds()
+                                    + record
+                                    .getDurationSeconds()
                                     + " sec"
                     );
 
@@ -975,11 +979,11 @@ public class Main {
             }
 
 
-            System.out.println();
+            // =================================
+            // Alarm Menu Options
+            // =================================
 
-            System.out.println(
-                    "[A] Acknowledge Alarm"
-            );
+            System.out.println();
 
             System.out.println(
                     "[0] Back"
@@ -1017,112 +1021,11 @@ public class Main {
             } while (command == null);
 
 
-            // =================================
-            // ACKNOWLEDGE ALARM
-            // =================================
-
-            if (command.equalsIgnoreCase("A")) {
-
-
-                if (records.isEmpty()) {
-
-                    System.out.println();
-
-                    System.out.println(
-                            "No alarm available."
-                    );
-
-                    continue;
-                }
-
-
-                System.out.print(
-                        "Enter Alarm Number : "
-                );
-
-
-                String numberInput;
-
-
-                do {
-
-                    numberInput =
-                            inputHandler.getCommand();
-
-                    try {
-
-                        Thread.sleep(100);
-
-                    } catch (InterruptedException e) {
-
-                        Thread.currentThread()
-                                .interrupt();
-
-                        return;
-                    }
-
-                } while (numberInput == null);
-
-
-                try {
-
-                    int alarmNumber =
-                            Integer.parseInt(
-                                    numberInput
-                            );
-
-
-                    boolean success =
-                            alarmHistoryService
-                                    .acknowledgeAlarm(
-                                            module,
-                                            alarmNumber - 1
-                                    );
-
-
-                    if (success) {
-
-                        System.out.println();
-
-                        System.out.println(
-                                "Alarm acknowledged successfully."
-                        );
-
-                    } else {
-
-                        System.out.println();
-
-                        System.out.println(
-                                "Unable to acknowledge alarm."
-                        );
-                    }
-
-                } catch (NumberFormatException e) {
-
-                    System.out.println();
-
-                    System.out.println(
-                            "Please enter a valid number."
-                    );
-                }
-            }
-
-
-            // =================================
-            // BACK
-            // =================================
-
-            else if (command.equals("0")) {
+            if (command.equals("0")) {
 
                 menu = false;
-            }
 
-
-            // =================================
-            // INVALID
-            // =================================
-
-            else {
+            } else {
 
                 System.out.println();
 

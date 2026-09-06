@@ -1,3 +1,4 @@
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,13 +10,13 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -23,7 +24,7 @@ public class MonitoringHistoryWindow {
 
 
     // =====================================================
-    // SERVICES
+    // SERVICE
     // =====================================================
 
     private final MonitoringHistoryService historyService;
@@ -32,24 +33,25 @@ public class MonitoringHistoryWindow {
 
 
     // =====================================================
-    // UI COMPONENTS
+    // TABLE
     // =====================================================
 
-    private TableView<MonitoringRecord> table;
+    private TableView<MonitoringHistory> table;
+
+
+    // =====================================================
+    // FILTER
+    // =====================================================
 
     private ComboBox<String> moduleSelector;
 
-    private Label recordCountLabel;
-
 
     // =====================================================
-    // DATE FORMAT
+    // DATA
     // =====================================================
 
-    private final DateTimeFormatter dateFormatter =
-            DateTimeFormatter.ofPattern(
-                    "yyyy-MM-dd HH:mm:ss"
-            );
+    private final ObservableList<MonitoringHistory> tableData =
+            FXCollections.observableArrayList();
 
 
     // =====================================================
@@ -87,7 +89,7 @@ public class MonitoringHistoryWindow {
 
 
         root.setPadding(
-                new Insets(25)
+                new Insets(20)
         );
 
 
@@ -106,26 +108,20 @@ public class MonitoringHistoryWindow {
 
 
         // =================================================
-        // TABLE
+        // CENTER
         // =================================================
 
-        table =
-                createTable();
-
-
         root.setCenter(
-                table
+                createTable()
         );
 
 
         // =================================================
-        // BOTTOM PANEL
+        // BOTTOM
         // =================================================
 
         root.setBottom(
-                createBottomPanel(
-                        stage
-                )
+                createButtonPanel(stage)
         );
 
 
@@ -135,11 +131,8 @@ public class MonitoringHistoryWindow {
 
         Scene scene =
                 new Scene(
-
                         root,
-
-                        1250,
-
+                        1150,
                         650
                 );
 
@@ -149,16 +142,13 @@ public class MonitoringHistoryWindow {
         );
 
 
-        stage.setScene(
-                scene
-        );
-
+        stage.setScene(scene);
 
         stage.show();
 
 
         // =================================================
-        // LOAD HISTORY
+        // LOAD DATA
         // =================================================
 
         loadAllHistory();
@@ -166,7 +156,7 @@ public class MonitoringHistoryWindow {
 
 
     // =====================================================
-    // HEADER
+    // CREATE HEADER
     // =====================================================
 
     private VBox createHeader() {
@@ -179,7 +169,7 @@ public class MonitoringHistoryWindow {
 
 
         title.setStyle(
-                "-fx-font-size: 26px;"
+                "-fx-font-size: 24px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #2c3e50;"
         );
@@ -192,7 +182,7 @@ public class MonitoringHistoryWindow {
 
 
         subtitle.setStyle(
-                "-fx-font-size: 14px;"
+                "-fx-font-size: 13px;"
                         + "-fx-text-fill: #7f8c8d;"
         );
 
@@ -205,19 +195,25 @@ public class MonitoringHistoryWindow {
                 new ComboBox<>();
 
 
+        moduleSelector.setPrefWidth(
+                250
+        );
+
+
         moduleSelector.getItems().add(
                 "ALL MODULES"
         );
 
 
-        for (Transceiver module : modules) {
+        for (
+                Transceiver module :
+                modules
+        ) {
 
             moduleSelector.getItems().add(
 
                     module.getModuleId()
-
                             + " - "
-
                             + module.getModel()
             );
         }
@@ -228,66 +224,45 @@ public class MonitoringHistoryWindow {
         );
 
 
-        moduleSelector.setPrefWidth(
-                300
-        );
-
-
         moduleSelector.setOnAction(
-                event -> loadSelectedHistory()
+                event -> filterHistory()
         );
 
 
-        Label selectorLabel =
-                new Label(
-                        "Select Module:"
-                );
-
-
-        selectorLabel.setStyle(
-                "-fx-font-size: 14px;"
-                        + "-fx-font-weight: bold;"
-        );
-
-
-        HBox selectorBox =
+        HBox filterBox =
                 new HBox(
-
                         10,
 
-                        selectorLabel,
+                        new Label(
+                                "Select Module:"
+                        ),
 
                         moduleSelector
                 );
 
 
-        selectorBox.setAlignment(
+        filterBox.setAlignment(
                 Pos.CENTER_LEFT
         );
 
 
         VBox header =
                 new VBox(
-
-                        8,
+                        12,
 
                         title,
 
                         subtitle,
 
-                        selectorBox
+                        filterBox
                 );
 
 
         header.setPadding(
                 new Insets(
-
                         0,
-
                         0,
-
                         20,
-
                         0
                 )
         );
@@ -301,26 +276,28 @@ public class MonitoringHistoryWindow {
     // CREATE TABLE
     // =====================================================
 
-    private TableView<MonitoringRecord> createTable() {
+    private VBox createTable() {
 
 
-        TableView<MonitoringRecord> historyTable =
+        table =
                 new TableView<>();
 
 
-        historyTable.setColumnResizePolicy(
-                TableView.CONSTRAINED_RESIZE_POLICY
+        table.setItems(
+                tableData
+        );
+
+
+        table.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN
         );
 
 
         // =================================================
-        // TIMESTAMP
+        // TIME COLUMN
         // =================================================
 
-        TableColumn<
-                MonitoringRecord,
-                String
-                > timeColumn =
+        TableColumn<MonitoringHistory, String> timeColumn =
                 new TableColumn<>(
                         "Timestamp"
                 );
@@ -331,47 +308,18 @@ public class MonitoringHistoryWindow {
 
                         new SimpleStringProperty(
 
-                                cellData.getValue()
-                                        .getTimestamp()
-                                        .format(
-                                                dateFormatter
-                                        )
+                                cellData
+                                        .getValue()
+                                        .getFormattedTime()
                         )
         );
 
 
         // =================================================
-        // MODULE
+        // TEMPERATURE COLUMN
         // =================================================
 
-        TableColumn<
-                MonitoringRecord,
-                String
-                > moduleColumn =
-                new TableColumn<>(
-                        "Module ID"
-                );
-
-
-        moduleColumn.setCellValueFactory(
-                cellData ->
-
-                        new SimpleStringProperty(
-
-                                cellData.getValue()
-                                        .getModuleId()
-                        )
-        );
-
-
-        // =================================================
-        // TEMPERATURE
-        // =================================================
-
-        TableColumn<
-                MonitoringRecord,
-                String
-                > temperatureColumn =
+        TableColumn<MonitoringHistory, Number> temperatureColumn =
                 new TableColumn<>(
                         "Temperature (°C)"
                 );
@@ -380,27 +328,20 @@ public class MonitoringHistoryWindow {
         temperatureColumn.setCellValueFactory(
                 cellData ->
 
-                        new SimpleStringProperty(
+                        new SimpleDoubleProperty(
 
-                                String.format(
-
-                                        "%.2f",
-
-                                        cellData.getValue()
-                                                .getTemperature()
-                                )
+                                cellData
+                                        .getValue()
+                                        .getTemperature()
                         )
         );
 
 
         // =================================================
-        // VOLTAGE
+        // VOLTAGE COLUMN
         // =================================================
 
-        TableColumn<
-                MonitoringRecord,
-                String
-                > voltageColumn =
+        TableColumn<MonitoringHistory, Number> voltageColumn =
                 new TableColumn<>(
                         "Voltage (V)"
                 );
@@ -409,56 +350,20 @@ public class MonitoringHistoryWindow {
         voltageColumn.setCellValueFactory(
                 cellData ->
 
-                        new SimpleStringProperty(
+                        new SimpleDoubleProperty(
 
-                                String.format(
-
-                                        "%.3f",
-
-                                        cellData.getValue()
-                                                .getVoltage()
-                                )
+                                cellData
+                                        .getValue()
+                                        .getVoltage()
                         )
         );
 
 
         // =================================================
-        // RX POWER
+        // TX POWER COLUMN
         // =================================================
 
-        TableColumn<
-                MonitoringRecord,
-                String
-                > rxPowerColumn =
-                new TableColumn<>(
-                        "RX Power (dBm)"
-                );
-
-
-        rxPowerColumn.setCellValueFactory(
-                cellData ->
-
-                        new SimpleStringProperty(
-
-                                String.format(
-
-                                        "%.2f",
-
-                                        cellData.getValue()
-                                                .getRxPower()
-                                )
-                        )
-        );
-
-
-        // =================================================
-        // TX POWER
-        // =================================================
-
-        TableColumn<
-                MonitoringRecord,
-                String
-                > txPowerColumn =
+        TableColumn<MonitoringHistory, Number> txPowerColumn =
                 new TableColumn<>(
                         "TX Power (dBm)"
                 );
@@ -467,27 +372,42 @@ public class MonitoringHistoryWindow {
         txPowerColumn.setCellValueFactory(
                 cellData ->
 
-                        new SimpleStringProperty(
+                        new SimpleDoubleProperty(
 
-                                String.format(
-
-                                        "%.2f",
-
-                                        cellData.getValue()
-                                                .getTxPower()
-                                )
+                                cellData
+                                        .getValue()
+                                        .getTxPower()
                         )
         );
 
 
         // =================================================
-        // LASER CURRENT
+        // RX POWER COLUMN
         // =================================================
 
-        TableColumn<
-                MonitoringRecord,
-                String
-                > laserCurrentColumn =
+        TableColumn<MonitoringHistory, Number> rxPowerColumn =
+                new TableColumn<>(
+                        "RX Power (dBm)"
+                );
+
+
+        rxPowerColumn.setCellValueFactory(
+                cellData ->
+
+                        new SimpleDoubleProperty(
+
+                                cellData
+                                        .getValue()
+                                        .getRxPower()
+                        )
+        );
+
+
+        // =================================================
+        // LASER CURRENT COLUMN
+        // =================================================
+
+        TableColumn<MonitoringHistory, Number> laserCurrentColumn =
                 new TableColumn<>(
                         "Laser Current (mA)"
                 );
@@ -496,27 +416,20 @@ public class MonitoringHistoryWindow {
         laserCurrentColumn.setCellValueFactory(
                 cellData ->
 
-                        new SimpleStringProperty(
+                        new SimpleDoubleProperty(
 
-                                String.format(
-
-                                        "%.2f",
-
-                                        cellData.getValue()
-                                                .getLaserCurrent()
-                                )
+                                cellData
+                                        .getValue()
+                                        .getLaserCurrent()
                         )
         );
 
 
         // =================================================
-        // STATUS
+        // STATUS COLUMN
         // =================================================
 
-        TableColumn<
-                MonitoringRecord,
-                String
-                > statusColumn =
+        TableColumn<MonitoringHistory, String> statusColumn =
                 new TableColumn<>(
                         "Status"
                 );
@@ -527,7 +440,8 @@ public class MonitoringHistoryWindow {
 
                         new SimpleStringProperty(
 
-                                cellData.getValue()
+                                cellData
+                                        .getValue()
                                         .getStatus()
                         )
         );
@@ -537,19 +451,17 @@ public class MonitoringHistoryWindow {
         // ADD COLUMNS
         // =================================================
 
-        historyTable.getColumns().addAll(
+        table.getColumns().addAll(
 
                 timeColumn,
-
-                moduleColumn,
 
                 temperatureColumn,
 
                 voltageColumn,
 
-                rxPowerColumn,
-
                 txPowerColumn,
+
+                rxPowerColumn,
 
                 laserCurrentColumn,
 
@@ -557,169 +469,29 @@ public class MonitoringHistoryWindow {
         );
 
 
-        return historyTable;
-    }
-
-
-    // =====================================================
-    // LOAD ALL HISTORY
-    // =====================================================
-
-    private void loadAllHistory() {
-
-
-        List<MonitoringRecord> records =
-                historyService.getAllHistory();
-
-
-        ObservableList<MonitoringRecord> data =
-                FXCollections.observableArrayList(
-                        records
+        VBox container =
+                new VBox(
+                        table
                 );
 
 
-        table.setItems(
-                data
+        VBox.setVgrow(
+                table,
+                javafx.scene.layout.Priority.ALWAYS
         );
 
 
-        updateRecordCount(
-                records.size()
-        );
+        return container;
     }
 
 
     // =====================================================
-    // LOAD SELECTED HISTORY
+    // BUTTON PANEL
     // =====================================================
 
-    private void loadSelectedHistory() {
-
-
-        String selected =
-                moduleSelector.getValue();
-
-
-        if (
-
-                selected == null
-
-                        ||
-
-                        selected.equals(
-                                "ALL MODULES"
-                        )
-        ) {
-
-            loadAllHistory();
-
-            return;
-        }
-
-
-        // =================================================
-        // GET MODULE ID
-        // =================================================
-
-        String moduleId =
-                selected.split(
-                        " - "
-                )[0];
-
-
-        Transceiver selectedModule =
-                null;
-
-
-        for (Transceiver module : modules) {
-
-            if (
-
-                    module.getModuleId()
-                            .equals(
-                                    moduleId
-                            )
-            ) {
-
-                selectedModule =
-                        module;
-
-                break;
-            }
-        }
-
-
-        if (selectedModule == null) {
-
-            return;
-        }
-
-
-        // =================================================
-        // GET HISTORY
-        // =================================================
-
-        List<MonitoringRecord> records =
-                historyService.getHistory(
-                        selectedModule
-                );
-
-
-        table.setItems(
-
-                FXCollections.observableArrayList(
-                        records
-                )
-        );
-
-
-        updateRecordCount(
-                records.size()
-        );
-    }
-
-
-    // =====================================================
-    // UPDATE RECORD COUNT
-    // =====================================================
-
-    private void updateRecordCount(
-            int count
-    ) {
-
-
-        if (recordCountLabel != null) {
-
-            recordCountLabel.setText(
-
-                    "Total Records: "
-
-                            + count
-            );
-        }
-    }
-
-
-    // =====================================================
-    // BOTTOM PANEL
-    // =====================================================
-
-    private HBox createBottomPanel(
+    private HBox createButtonPanel(
             Stage stage
     ) {
-
-
-        recordCountLabel =
-                new Label(
-                        "Total Records: 0"
-                );
-
-
-        recordCountLabel.setStyle(
-                "-fx-font-size: 14px;"
-                        + "-fx-font-weight: bold;"
-                        + "-fx-text-fill: #34495e;"
-        );
 
 
         Button refreshButton =
@@ -734,10 +506,10 @@ public class MonitoringHistoryWindow {
                 );
 
 
-        String buttonStyle =
+        String style =
                 "-fx-font-size: 14px;"
                         + "-fx-font-weight: bold;"
-                        + "-fx-padding: 8 16;"
+                        + "-fx-padding: 10 18;"
                         + "-fx-background-radius: 8;"
                         + "-fx-cursor: hand;"
                         + "-fx-background-color: white;"
@@ -746,11 +518,12 @@ public class MonitoringHistoryWindow {
 
 
         refreshButton.setStyle(
-                buttonStyle
+                style
         );
 
+
         closeButton.setStyle(
-                buttonStyle
+                style
         );
 
 
@@ -759,7 +532,7 @@ public class MonitoringHistoryWindow {
         // =================================================
 
         refreshButton.setOnAction(
-                event -> loadSelectedHistory()
+                event -> filterHistory()
         );
 
 
@@ -772,15 +545,8 @@ public class MonitoringHistoryWindow {
         );
 
 
-        HBox left =
+        HBox buttons =
                 new HBox(
-                        recordCountLabel
-                );
-
-
-        HBox right =
-                new HBox(
-
                         10,
 
                         refreshButton,
@@ -789,44 +555,119 @@ public class MonitoringHistoryWindow {
                 );
 
 
-        HBox bottom =
-                new HBox(
-
-                        10,
-
-                        left,
-
-                        right
-                );
-
-
-        bottom.setAlignment(
-                Pos.CENTER_LEFT
+        buttons.setAlignment(
+                Pos.CENTER_RIGHT
         );
 
 
-        bottom.setPadding(
+        buttons.setPadding(
                 new Insets(
-
                         20,
-
                         0,
-
                         0,
-
                         0
                 )
         );
 
 
-        HBox.setHgrow(
-
-                left,
-
-                Priority.ALWAYS
-        );
+        return buttons;
+    }
 
 
-        return bottom;
+    // =====================================================
+    // LOAD ALL HISTORY
+    // =====================================================
+
+    private void loadAllHistory() {
+
+
+        tableData.clear();
+
+
+        for (
+                Transceiver module :
+                modules
+        ) {
+
+            List<MonitoringHistory> history =
+                    historyService.getHistory(
+                            module
+                    );
+
+
+            tableData.addAll(
+                    history
+            );
+        }
+    }
+
+
+    // =====================================================
+    // FILTER HISTORY
+    // =====================================================
+
+    private void filterHistory() {
+
+
+        String selected =
+                moduleSelector.getValue();
+
+
+        tableData.clear();
+
+
+        // =================================================
+        // ALL MODULES
+        // =================================================
+
+        if (
+                selected == null
+                        ||
+                        selected.equals(
+                                "ALL MODULES"
+                        )
+        ) {
+
+            loadAllHistory();
+
+            return;
+        }
+
+
+        // =================================================
+        // FIND MODULE
+        // =================================================
+
+        for (
+                Transceiver module :
+                modules
+        ) {
+
+            String displayName =
+                    module.getModuleId()
+                            + " - "
+                            + module.getModel();
+
+
+            if (
+                    displayName.equals(
+                            selected
+                    )
+            ) {
+
+                List<MonitoringHistory> history =
+                        historyService.getHistory(
+                                module
+                        );
+
+
+                tableData.addAll(
+                        history
+                );
+
+
+                break;
+            }
+        }
     }
 }

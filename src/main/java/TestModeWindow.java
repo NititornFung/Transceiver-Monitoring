@@ -1,17 +1,22 @@
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+
 import javafx.scene.Scene;
+
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
+
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
 import javafx.stage.Stage;
 
 import java.time.LocalDateTime;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +40,14 @@ public class TestModeWindow {
 
 
     // =========================================
+    // TEST SESSION
+    // =========================================
+
+    private final List<MonitoringRecord> testSessionRecords =
+            new ArrayList<>();
+
+
+    // =========================================
     // INPUT FIELDS
     // =========================================
 
@@ -52,10 +65,12 @@ public class TestModeWindow {
 
 
     // =========================================
-    // RESULT LABEL
+    // RESULT
     // =========================================
 
     private Label resultLabel;
+
+    private Label sessionLabel;
 
 
     // =========================================
@@ -112,21 +127,15 @@ public class TestModeWindow {
         );
 
 
-        // HEADER
-
         root.setTop(
                 createHeader()
         );
 
 
-        // CENTER
-
         root.setCenter(
                 createTestForm()
         );
 
-
-        // BUTTONS
 
         root.setBottom(
                 createButtonPanel(stage)
@@ -135,9 +144,12 @@ public class TestModeWindow {
 
         Scene scene =
                 new Scene(
+
                         root,
-                        650,
-                        700
+
+                        700,
+
+                        750
                 );
 
 
@@ -154,7 +166,7 @@ public class TestModeWindow {
 
 
     // =========================================
-    // CREATE HEADER
+    // HEADER
     // =========================================
 
     private VBox createHeader() {
@@ -194,7 +206,7 @@ public class TestModeWindow {
 
         Label warning =
                 new Label(
-                        "⚠ Alarms generated in this mode will be marked as TEST"
+                        "Manual values are allowed. All alarms will be marked as TEST."
                 );
 
 
@@ -202,6 +214,19 @@ public class TestModeWindow {
                 "-fx-font-size: 13px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #e67e22;"
+        );
+
+
+        sessionLabel =
+                new Label(
+                        "Test Session Records: 0"
+                );
+
+
+        sessionLabel.setStyle(
+                "-fx-font-size: 13px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #2980b9;"
         );
 
 
@@ -216,15 +241,21 @@ public class TestModeWindow {
 
                         warning,
 
+                        sessionLabel,
+
                         new Separator()
                 );
 
 
         header.setPadding(
                 new Insets(
+
                         0,
+
                         0,
+
                         20,
+
                         0
                 )
         );
@@ -235,7 +266,7 @@ public class TestModeWindow {
 
 
     // =========================================
-    // CREATE TEST FORM
+    // TEST FORM
     // =========================================
 
     private VBox createTestForm() {
@@ -267,81 +298,41 @@ public class TestModeWindow {
         );
 
 
-        // =====================================
-        // TEMPERATURE
-        // =====================================
-
         temperatureField =
-                new TextField();
+                createInputField(
+                        "Example: 90.0"
+                );
 
-        temperatureField.setPromptText(
-                "Example: 90.0"
-        );
-
-
-        // =====================================
-        // VOLTAGE
-        // =====================================
 
         voltageField =
-                new TextField();
+                createInputField(
+                        "Example: 3.2"
+                );
 
-        voltageField.setPromptText(
-                "Example: 3.2"
-        );
-
-
-        // =====================================
-        // TX POWER
-        // =====================================
 
         txPowerField =
-                new TextField();
+                createInputField(
+                        "Example: -3.0"
+                );
 
-        txPowerField.setPromptText(
-                "Example: -3.0"
-        );
-
-
-        // =====================================
-        // RX POWER
-        // =====================================
 
         rxPowerField =
-                new TextField();
+                createInputField(
+                        "Example: -12.0"
+                );
 
-        rxPowerField.setPromptText(
-                "Example: -12.0"
-        );
-
-
-        // =====================================
-        // WAVELENGTH
-        // =====================================
 
         wavelengthField =
-                new TextField();
+                createInputField(
+                        "Example: 1310"
+                );
 
-        wavelengthField.setPromptText(
-                "Example: 1310"
-        );
-
-
-        // =====================================
-        // LASER CURRENT
-        // =====================================
 
         laserCurrentField =
-                new TextField();
+                createInputField(
+                        "Example: 75.0"
+                );
 
-        laserCurrentField.setPromptText(
-                "Example: 75.0"
-        );
-
-
-        // =====================================
-        // ADD FORM ROWS
-        // =====================================
 
         addRow(
                 grid,
@@ -391,10 +382,6 @@ public class TestModeWindow {
         );
 
 
-        // =====================================
-        // RESULT
-        // =====================================
-
         resultLabel =
                 new Label(
                         "Ready for test"
@@ -426,6 +413,30 @@ public class TestModeWindow {
 
 
     // =========================================
+    // INPUT FIELD
+    // =========================================
+
+    private TextField createInputField(
+            String prompt
+    ) {
+
+        TextField field =
+                new TextField();
+
+
+        field.setPromptText(
+                prompt
+        );
+
+
+        field.setPrefWidth(350);
+
+
+        return field;
+    }
+
+
+    // =========================================
     // ADD ROW
     // =========================================
 
@@ -442,19 +453,12 @@ public class TestModeWindow {
 
 
         Label label =
-                new Label(
-                        labelText
-                );
+                new Label(labelText);
 
 
         label.setStyle(
                 "-fx-font-size: 14px;"
                         + "-fx-font-weight: bold;"
-        );
-
-
-        field.setPrefWidth(
-                350
         );
 
 
@@ -494,17 +498,22 @@ public class TestModeWindow {
                 );
 
 
+        Button exportButton =
+                new Button(
+                        "📤 EXPORT CSV"
+                );
+
+
         Button closeButton =
                 new Button(
                         "CLOSE"
                 );
 
 
-        String buttonStyle =
-
+        String style =
                 "-fx-font-size: 14px;"
                         + "-fx-font-weight: bold;"
-                        + "-fx-padding: 10 18;"
+                        + "-fx-padding: 10 16;"
                         + "-fx-background-radius: 8;"
                         + "-fx-cursor: hand;"
                         + "-fx-background-color: white;"
@@ -512,34 +521,29 @@ public class TestModeWindow {
                         + "-fx-border-radius: 8;";
 
 
-        runButton.setStyle(
-                buttonStyle
-        );
+        runButton.setStyle(style);
 
-        resetButton.setStyle(
-                buttonStyle
-        );
+        resetButton.setStyle(style);
 
-        closeButton.setStyle(
-                buttonStyle
-        );
+        exportButton.setStyle(style);
 
+        closeButton.setStyle(style);
 
-        // RUN TEST
 
         runButton.setOnAction(
                 event -> runTest()
         );
 
 
-        // RESET
-
         resetButton.setOnAction(
                 event -> resetFields()
         );
 
 
-        // CLOSE
+        exportButton.setOnAction(
+                event -> exportTestSession(stage)
+        );
+
 
         closeButton.setOnAction(
                 event -> stage.close()
@@ -555,6 +559,8 @@ public class TestModeWindow {
 
                         resetButton,
 
+                        exportButton,
+
                         closeButton
                 );
 
@@ -566,9 +572,13 @@ public class TestModeWindow {
 
         buttons.setPadding(
                 new Insets(
+
                         20,
+
                         0,
+
                         0,
+
                         0
                 )
         );
@@ -589,7 +599,7 @@ public class TestModeWindow {
 
 
             // =====================================
-            // READ INPUT VALUES
+            // READ VALUES
             // =====================================
 
             double temperature =
@@ -671,7 +681,7 @@ public class TestModeWindow {
 
 
             // =====================================
-            // RUN MONITORING
+            // MONITOR
             // =====================================
 
             MonitoringReport report =
@@ -681,15 +691,56 @@ public class TestModeWindow {
 
 
             // =====================================
-            // SAVE MONITORING HISTORY
+            // SAVE TEST HISTORY
             // =====================================
 
-            saveMonitoringHistory(
+            monitoringHistoryService.addTestHistory(
+
+                    module,
 
                     telemetry,
 
                     report
             );
+
+
+            // =====================================
+            // SAVE TEST SESSION
+            // =====================================
+
+            MonitoringRecord testRecord =
+                    new MonitoringRecord(
+
+                            module.getModuleId(),
+
+                            module.getModel(),
+
+                            LocalDateTime.now(),
+
+                            telemetry.getTemperature(),
+
+                            telemetry.getVoltage(),
+
+                            telemetry.getRxPower(),
+
+                            telemetry.getTxPower(),
+
+                            telemetry.getWavelength(),
+
+                            telemetry.getLaserCurrent(),
+
+                            report.getStatus().toString(),
+
+                            MonitoringSource.TEST
+                    );
+
+
+            testSessionRecords.add(
+                    testRecord
+            );
+
+
+            updateSessionLabel();
 
 
             // =====================================
@@ -703,7 +754,7 @@ public class TestModeWindow {
 
 
             // =====================================
-            // SAVE ALARM HISTORY
+            // SAVE ALARMS
             // =====================================
 
             if (!testAlarms.isEmpty()) {
@@ -719,44 +770,27 @@ public class TestModeWindow {
 
 
             // =====================================
-            // SHOW RESULT
+            // RESULT
             // =====================================
 
             if (testAlarms.isEmpty()) {
 
 
-                resultLabel.setText(
-
-                        "✓ TEST PASSED - No Alarm Generated"
-                );
-
-
-                resultLabel.setStyle(
-
-                        "-fx-font-size: 14px;"
-                                + "-fx-font-weight: bold;"
-                                + "-fx-text-fill: #27ae60;"
+                showSuccess(
+                        "✓ TEST COMPLETED - No Alarm Generated"
                 );
             }
 
             else {
 
 
-                resultLabel.setText(
+                showError(
 
                         "⚠ TEST COMPLETED - "
 
                                 + testAlarms.size()
 
                                 + " Alarm(s) Generated"
-                );
-
-
-                resultLabel.setStyle(
-
-                        "-fx-font-size: 14px;"
-                                + "-fx-font-weight: bold;"
-                                + "-fx-text-fill: #e74c3c;"
                 );
             }
 
@@ -769,23 +803,60 @@ public class TestModeWindow {
 
                 refreshDashboard.run();
             }
-        }
 
+
+        }
 
         catch (NumberFormatException exception) {
 
-
-            resultLabel.setText(
-
+            showError(
                     "⚠ Invalid input. Please enter valid numeric values."
             );
+        }
+    }
 
 
-            resultLabel.setStyle(
+    // =========================================
+    // EXPORT TEST SESSION
+    // =========================================
 
-                    "-fx-font-size: 14px;"
-                            + "-fx-font-weight: bold;"
-                            + "-fx-text-fill: #e74c3c;"
+    private void exportTestSession(
+            Stage stage
+    ) {
+
+
+        if (testSessionRecords.isEmpty()) {
+
+            showError(
+                    "⚠ No test records available to export."
+            );
+
+            return;
+        }
+
+
+        CsvExportService exportService =
+                new CsvExportService();
+
+
+        boolean success =
+                exportService.exportTestRecords(
+
+                        stage,
+
+                        testSessionRecords
+                );
+
+
+        if (success) {
+
+            showSuccess(
+
+                    "✓ CSV exported successfully. "
+
+                            + testSessionRecords.size()
+
+                            + " test records exported."
             );
         }
     }
@@ -803,10 +874,6 @@ public class TestModeWindow {
         List<AlarmRecord> alarms =
                 new ArrayList<>();
 
-
-        // =====================================
-        // TEMPERATURE HIGH
-        // =====================================
 
         if (telemetry.getTemperature() > 85.0) {
 
@@ -835,10 +902,6 @@ public class TestModeWindow {
         }
 
 
-        // =====================================
-        // VOLTAGE LOW
-        // =====================================
-
         if (telemetry.getVoltage() < 3.0) {
 
 
@@ -866,10 +929,6 @@ public class TestModeWindow {
         }
 
 
-        // =====================================
-        // VOLTAGE HIGH
-        // =====================================
-
         if (telemetry.getVoltage() > 3.6) {
 
 
@@ -896,10 +955,6 @@ public class TestModeWindow {
             );
         }
 
-
-        // =====================================
-        // RX POWER LOW
-        // =====================================
 
         if (telemetry.getRxPower() < -10.0) {
 
@@ -933,50 +988,64 @@ public class TestModeWindow {
 
 
     // =========================================
-    // SAVE MONITORING HISTORY
+    // UPDATE SESSION LABEL
     // =========================================
 
-    private void saveMonitoringHistory(
+    private void updateSessionLabel() {
 
-            Telemetry telemetry,
+        sessionLabel.setText(
 
-            MonitoringReport report
-    ) {
+                "Test Session Records: "
 
-
-        MonitoringRecord record =
-                new MonitoringRecord(
-
-                        module.getModuleId(),
-
-                        LocalDateTime.now(),
-
-                        telemetry.getTemperature(),
-
-                        telemetry.getVoltage(),
-
-                        telemetry.getRxPower(),
-
-                        telemetry.getTxPower(),
-
-                        telemetry.getLaserCurrent(),
-
-                        "TEST | "
-                                + report.getStatus()
-                );
-
-
-        monitoringHistoryService.addHistory(
-
-                module,
-
-                record
+                        + testSessionRecords.size()
         );
     }
 
 
     // =========================================
-    // RESET FIELDS
+    // SUCCESS
+    // =========================================
+
+    private void showSuccess(
+            String message
+    ) {
+
+        resultLabel.setText(
+                message
+        );
+
+
+        resultLabel.setStyle(
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #27ae60;"
+        );
+    }
+
+
+    // =========================================
+    // ERROR
+    // =========================================
+
+    private void showError(
+            String message
+    ) {
+
+        resultLabel.setText(
+                message
+        );
+
+
+        resultLabel.setStyle(
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #e74c3c;"
+        );
+    }
+
+
+    // =========================================
+    // RESET
     // =========================================
 
     private void resetFields() {
@@ -1001,7 +1070,6 @@ public class TestModeWindow {
 
 
         resultLabel.setStyle(
-
                 "-fx-font-size: 14px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #7f8c8d;"

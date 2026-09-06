@@ -1,56 +1,234 @@
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
 public class MonitoringHistory {
 
-    private Transceiver module;
-    private String status;
-    private LocalDateTime timestamp;
+
+    // =====================================================
+    // DATA
+    // =====================================================
+
+    private final String moduleId;
+
+    private final String model;
+
+    private final LocalDateTime timestamp;
+
+    private final double temperature;
+
+    private final double voltage;
+
+    private final double txPower;
+
+    private final double rxPower;
+
+    private final double laserCurrent;
+
+    private final String status;
+
+    private final String source;
 
 
-    // =================================
-    // Constructor
-    // =================================
+    // =====================================================
+    // FORMATTER
+    // =====================================================
+
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern(
+                    "yyyy-MM-dd HH:mm:ss"
+            );
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
 
     public MonitoringHistory(
-            Transceiver module,
-            String status
+
+            String moduleId,
+
+            String model,
+
+            LocalDateTime timestamp,
+
+            double temperature,
+
+            double voltage,
+
+            double txPower,
+
+            double rxPower,
+
+            double laserCurrent,
+
+            String status,
+
+            String source
     ) {
 
-        this.module = module;
-        this.status = status;
-        this.timestamp = LocalDateTime.now();
+
+        this.moduleId =
+                moduleId;
+
+        this.model =
+                model;
+
+        this.timestamp =
+                timestamp;
+
+        this.temperature =
+                temperature;
+
+        this.voltage =
+                voltage;
+
+        this.txPower =
+                txPower;
+
+        this.rxPower =
+                rxPower;
+
+        this.laserCurrent =
+                laserCurrent;
+
+        this.status =
+                status;
+
+        this.source =
+                source;
     }
 
 
-    // =================================
-    // Getter
-    // =================================
+    // =====================================================
+    // GETTERS
+    // =====================================================
 
-    public Transceiver getModule() {
-        return module;
+    public String getModuleId() {
+
+        return moduleId;
     }
 
-    public String getStatus() {
-        return status;
+
+    public String getModel() {
+
+        return model;
     }
+
 
     public LocalDateTime getTimestamp() {
+
         return timestamp;
     }
 
 
-    // =================================
-    // Formatted Time
-    // =================================
+    public double getTemperature() {
+
+        return temperature;
+    }
+
+
+    public double getVoltage() {
+
+        return voltage;
+    }
+
+
+    public double getTxPower() {
+
+        return txPower;
+    }
+
+
+    public double getRxPower() {
+
+        return rxPower;
+    }
+
+
+    public double getLaserCurrent() {
+
+        return laserCurrent;
+    }
+
+
+    public String getStatus() {
+
+        return status;
+    }
+
+
+    public String getSource() {
+
+        return source;
+    }
+
+
+    // =====================================================
+    // FORMATTED TIME
+    // =====================================================
 
     public String getFormattedTime() {
 
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern(
-                        "yyyy-MM-dd HH:mm:ss"
-                );
+        return FORMATTER.format(
+                timestamp
+        );
+    }
 
-        return timestamp.format(formatter);
+
+    // =====================================================
+    // DISPLAY
+    // =====================================================
+
+    @Override
+    public String toString() {
+
+
+        return
+
+                "Time: "
+                        + getFormattedTime()
+
+                        + " | Module: "
+                        + moduleId
+
+                        + " | Model: "
+                        + model
+
+                        + " | Temp: "
+                        + String.format(
+                        "%.2f °C",
+                        temperature
+                )
+
+                        + " | Voltage: "
+                        + String.format(
+                        "%.3f V",
+                        voltage
+                )
+
+                        + " | TX: "
+                        + String.format(
+                        "%.2f dBm",
+                        txPower
+                )
+
+                        + " | RX: "
+                        + String.format(
+                        "%.2f dBm",
+                        rxPower
+                )
+
+                        + " | Laser: "
+                        + String.format(
+                        "%.2f mA",
+                        laserCurrent
+                )
+
+                        + " | Status: "
+                        + status
+
+                        + " | Source: "
+                        + source;
     }
 }

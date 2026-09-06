@@ -1,122 +1,554 @@
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public class AlarmHistoryService {
 
 
     // =========================================
-    // ALARM HISTORY STORAGE
+    // Alarm History Storage
     // =========================================
 
-    private final Map<
-            Transceiver,
-            List<AlarmRecord>
-            > alarmHistory;
+    private final List<AlarmRecord> alarmHistory =
+            new ArrayList<>();
 
 
     // =========================================
-    // CONSTRUCTOR
+    // Add Single Alarm
     // =========================================
 
-    public AlarmHistoryService() {
+    public void addAlarm(
+            AlarmRecord alarm
+    ) {
 
-        alarmHistory =
-                new HashMap<>();
+        if (alarm == null) {
+            return;
+        }
+
+        alarmHistory.add(
+                alarm
+        );
     }
 
 
     // =========================================
-    // ADD ALARMS
+    // Add Multiple Alarms
     // =========================================
 
     public void addAlarms(
-
             Transceiver module,
-
             List<AlarmRecord> alarms
-
     ) {
 
-        if (alarms == null || alarms.isEmpty()) {
-
+        if (
+                alarms == null
+                        || alarms.isEmpty()
+        ) {
             return;
         }
 
 
-        List<AlarmRecord> moduleAlarms =
-                alarmHistory.getOrDefault(
+        for (AlarmRecord alarm : alarms) {
 
-                        module,
+            if (alarm != null) {
 
-                        new ArrayList<>()
+                alarmHistory.add(
+                        alarm
                 );
+            }
+        }
+    }
 
 
-        moduleAlarms.addAll(
-                alarms
-        );
+    // =========================================
+    // Get All History
+    // =========================================
 
+    public List<AlarmRecord> getAllHistory() {
 
-        alarmHistory.put(
-
-                module,
-
-                moduleAlarms
+        return new ArrayList<>(
+                alarmHistory
         );
     }
 
 
     // =========================================
-    // GET ALARM HISTORY BY MODULE
-    // =========================================
-
-    public List<AlarmRecord> getAlarmHistory(
-
-            Transceiver module
-
-    ) {
-
-        return alarmHistory.getOrDefault(
-
-                module,
-
-                new ArrayList<>()
-        );
-    }
-
-
-    // =========================================
-    // GET ALL ALARM HISTORY
+    // Compatibility Method
     // =========================================
 
     public List<AlarmRecord> getAllAlarmHistory() {
 
-        List<AlarmRecord> allAlarms =
-                new ArrayList<>();
-
-
-        for (
-
-                List<AlarmRecord> alarms :
-                alarmHistory.values()
-
-        ) {
-
-            allAlarms.addAll(
-                    alarms
-            );
-        }
-
-
-        return allAlarms;
+        return getAllHistory();
     }
 
 
     // =========================================
-    // ACKNOWLEDGE ALARM
+    // Get History By Module
+    // =========================================
+
+    public List<AlarmRecord> getHistory(
+            Transceiver module
+    ) {
+
+        if (module == null) {
+
+            return new ArrayList<>();
+        }
+
+
+        return alarmHistory
+                .stream()
+
+                .filter(
+                        alarm ->
+                                module.getModuleId()
+                                        .equals(
+                                                alarm.getModuleId()
+                                        )
+                )
+
+                .collect(
+                        Collectors.toList()
+                );
+    }
+
+
+    // =========================================
+    // Compatibility Method
+    // =========================================
+
+    public List<AlarmRecord> getAlarmHistory(
+            Transceiver module
+    ) {
+
+        return getHistory(
+                module
+        );
+    }
+
+
+    // =========================================
+    // Get History By Module ID
+    // =========================================
+
+    public List<AlarmRecord> getHistory(
+            String moduleId
+    ) {
+
+        if (moduleId == null) {
+
+            return new ArrayList<>();
+        }
+
+
+        return alarmHistory
+                .stream()
+
+                .filter(
+                        alarm ->
+                                moduleId.equals(
+                                        alarm.getModuleId()
+                                )
+                )
+
+                .collect(
+                        Collectors.toList()
+                );
+    }
+
+
+    // =========================================
+    // Filter Alarms
+    //
+    // Used by ExportAlarmHistoryWindow
+    // =========================================
+
+    public List<AlarmRecord> filterAlarms(
+
+            List<String> moduleIds,
+
+            AlarmType type,
+
+            AlarmSeverity severity,
+
+            AlarmSource source,
+
+            LocalDateTime startDate,
+
+            LocalDateTime endDate
+    ) {
+
+        return alarmHistory
+
+                .stream()
+
+
+                // =================================
+                // Filter Module
+                // =================================
+
+                .filter(
+                        alarm -> {
+
+                            if (
+                                    moduleIds == null
+                                            || moduleIds.isEmpty()
+                            ) {
+
+                                return true;
+                            }
+
+
+                            return moduleIds.contains(
+                                    alarm.getModuleId()
+                            );
+                        }
+                )
+
+
+                // =================================
+                // Filter Type
+                // =================================
+
+                .filter(
+                        alarm -> {
+
+                            if (type == null) {
+
+                                return true;
+                            }
+
+
+                            return alarm.getType()
+                                    == type;
+                        }
+                )
+
+
+                // =================================
+                // Filter Severity
+                // =================================
+
+                .filter(
+                        alarm -> {
+
+                            if (severity == null) {
+
+                                return true;
+                            }
+
+
+                            return alarm.getSeverity()
+                                    == severity;
+                        }
+                )
+
+
+                // =================================
+                // Filter Source
+                // =================================
+
+                .filter(
+                        alarm -> {
+
+                            if (source == null) {
+
+                                return true;
+                            }
+
+
+                            return alarm.getSource()
+                                    == source;
+                        }
+                )
+
+
+                // =================================
+                // Filter Start Date
+                // =================================
+
+                .filter(
+                        alarm -> {
+
+                            if (startDate == null) {
+
+                                return true;
+                            }
+
+
+                            if (
+                                    alarm.getTimestamp()
+                                            == null
+                            ) {
+
+                                return false;
+                            }
+
+
+                            return !alarm.getTimestamp()
+                                    .isBefore(
+                                            startDate
+                                    );
+                        }
+                )
+
+
+                // =================================
+                // Filter End Date
+                // =================================
+
+                .filter(
+                        alarm -> {
+
+                            if (endDate == null) {
+
+                                return true;
+                            }
+
+
+                            if (
+                                    alarm.getTimestamp()
+                                            == null
+                            ) {
+
+                                return false;
+                            }
+
+
+                            return !alarm.getTimestamp()
+                                    .isAfter(
+                                            endDate
+                                    );
+                        }
+                )
+
+
+                .collect(
+                        Collectors.toList()
+                );
+    }
+
+
+    // =========================================
+    // Compatibility Filter Method
+    // =========================================
+
+    public List<AlarmRecord> filterAlarms(
+
+            List<String> moduleIds,
+
+            LocalDateTime startDate,
+
+            LocalDateTime endDate,
+
+            boolean includeMonitoring,
+
+            boolean includeTest
+    ) {
+
+        return alarmHistory
+
+                .stream()
+
+                .filter(
+                        alarm -> {
+
+                            if (
+                                    moduleIds == null
+                                            || moduleIds.isEmpty()
+                            ) {
+
+                                return true;
+                            }
+
+
+                            return moduleIds.contains(
+                                    alarm.getModuleId()
+                            );
+                        }
+                )
+
+                .filter(
+                        alarm -> {
+
+                            if (startDate == null) {
+
+                                return true;
+                            }
+
+
+                            return !alarm.getTimestamp()
+                                    .isBefore(
+                                            startDate
+                                    );
+                        }
+                )
+
+                .filter(
+                        alarm -> {
+
+                            if (endDate == null) {
+
+                                return true;
+                            }
+
+
+                            return !alarm.getTimestamp()
+                                    .isAfter(
+                                            endDate
+                                    );
+                        }
+                )
+
+                .filter(
+                        alarm -> {
+
+                            if (
+                                    alarm.getSource()
+                                            == AlarmSource.MONITORING
+                            ) {
+
+                                return includeMonitoring;
+                            }
+
+
+                            if (
+                                    alarm.getSource()
+                                            == AlarmSource.TEST
+                            ) {
+
+                                return includeTest;
+                            }
+
+
+                            return false;
+                        }
+                )
+
+                .collect(
+                        Collectors.toList()
+                );
+    }
+
+
+    // =========================================
+    // Get Active Alarms
+    // =========================================
+
+    public List<AlarmRecord> getActiveAlarms() {
+
+        return alarmHistory
+
+                .stream()
+
+                .filter(
+                        alarm ->
+                                alarm.getStatus()
+                                        == AlarmStatus.ACTIVE
+                )
+
+                .collect(
+                        Collectors.toList()
+                );
+    }
+
+
+    // =========================================
+    // Get Alarms By Type
+    // =========================================
+
+    public List<AlarmRecord> getAlarmsByType(
+            AlarmType type
+    ) {
+
+        if (type == null) {
+
+            return getAllHistory();
+        }
+
+
+        return alarmHistory
+
+                .stream()
+
+                .filter(
+                        alarm ->
+                                alarm.getType()
+                                        == type
+                )
+
+                .collect(
+                        Collectors.toList()
+                );
+    }
+
+
+    // =========================================
+    // Get Alarms By Severity
+    // =========================================
+
+    public List<AlarmRecord> getAlarmsBySeverity(
+            AlarmSeverity severity
+    ) {
+
+        if (severity == null) {
+
+            return getAllHistory();
+        }
+
+
+        return alarmHistory
+
+                .stream()
+
+                .filter(
+                        alarm ->
+                                alarm.getSeverity()
+                                        == severity
+                )
+
+                .collect(
+                        Collectors.toList()
+                );
+    }
+
+
+    // =========================================
+    // Get Alarms By Source
+    // =========================================
+
+    public List<AlarmRecord> getAlarmsBySource(
+            AlarmSource source
+    ) {
+
+        if (source == null) {
+
+            return getAllHistory();
+        }
+
+
+        return alarmHistory
+
+                .stream()
+
+                .filter(
+                        alarm ->
+                                alarm.getSource()
+                                        == source
+                )
+
+                .collect(
+                        Collectors.toList()
+                );
+    }
+
+
+    // =========================================
+    // Acknowledge Alarm
+    //
+    // Uses AlarmStatus enum
     // =========================================
 
     public boolean acknowledgeAlarm(
@@ -124,31 +556,23 @@ public class AlarmHistoryService {
             Transceiver module,
 
             int index
-
     ) {
 
-        List<AlarmRecord> alarms =
-                alarmHistory.get(
-                        module
-                );
-
-
-        // ไม่มี Module นี้
-        if (alarms == null) {
+        if (module == null) {
 
             return false;
         }
 
 
-        // Index ไม่ถูกต้อง
+        List<AlarmRecord> moduleAlarms =
+                getHistory(
+                        module
+                );
+
+
         if (
-
                 index < 0
-
-                        ||
-
-                        index >= alarms.size()
-
+                        || index >= moduleAlarms.size()
         ) {
 
             return false;
@@ -156,12 +580,20 @@ public class AlarmHistoryService {
 
 
         AlarmRecord alarm =
-                alarms.get(
+                moduleAlarms.get(
                         index
                 );
 
 
-        // Acknowledge
+        if (
+                alarm.getStatus()
+                        != AlarmStatus.ACTIVE
+        ) {
+
+            return false;
+        }
+
+
         alarm.acknowledge();
 
 
@@ -170,50 +602,29 @@ public class AlarmHistoryService {
 
 
     // =========================================
-    // CLEAR ALARM
+    // Acknowledge Alarm Object
     // =========================================
 
-    public boolean clearAlarm(
-
-            Transceiver module,
-
-            int index
-
+    public boolean acknowledgeAlarm(
+            AlarmRecord alarm
     ) {
 
-        List<AlarmRecord> alarms =
-                alarmHistory.get(
-                        module
-                );
-
-
-        if (alarms == null) {
+        if (alarm == null) {
 
             return false;
         }
 
 
         if (
-
-                index < 0
-
-                        ||
-
-                        index >= alarms.size()
-
+                alarm.getStatus()
+                        != AlarmStatus.ACTIVE
         ) {
 
             return false;
         }
 
 
-        AlarmRecord alarm =
-                alarms.get(
-                        index
-                );
-
-
-        alarm.clear();
+        alarm.acknowledge();
 
 
         return true;
@@ -221,66 +632,27 @@ public class AlarmHistoryService {
 
 
     // =========================================
-    // GET TOTAL ALARM COUNT
+    // Acknowledge All Active Alarms
     // =========================================
 
-    public int getTotalAlarmCount() {
+    public void acknowledgeAll() {
 
-        int count = 0;
+        for (AlarmRecord alarm : alarmHistory) {
 
+            if (
+                    alarm != null
+                            && alarm.getStatus()
+                            == AlarmStatus.ACTIVE
+            ) {
 
-        for (
-
-                List<AlarmRecord> alarms :
-                alarmHistory.values()
-
-        ) {
-
-            count += alarms.size();
-        }
-
-
-        return count;
-    }
-
-
-    // =========================================
-    // GET ACTIVE ALARM COUNT
-    // =========================================
-
-    public int getActiveAlarmCount() {
-
-        int count = 0;
-
-
-        for (
-
-                List<AlarmRecord> alarms :
-                alarmHistory.values()
-
-        ) {
-
-            for (AlarmRecord alarm : alarms) {
-
-                if (
-
-                        alarm.getStatus()
-                                == AlarmStatus.ACTIVE
-
-                ) {
-
-                    count++;
-                }
+                alarm.acknowledge();
             }
         }
-
-
-        return count;
     }
 
 
     // =========================================
-    // CLEAR ALL HISTORY
+    // Clear All History
     // =========================================
 
     public void clearHistory() {
@@ -290,17 +662,100 @@ public class AlarmHistoryService {
 
 
     // =========================================
-    // CLEAR HISTORY BY MODULE
+    // Clear History By Module
     // =========================================
 
     public void clearHistory(
-
             Transceiver module
-
     ) {
 
-        alarmHistory.remove(
-                module
+        if (module == null) {
+
+            return;
+        }
+
+
+        alarmHistory.removeIf(
+
+                alarm ->
+
+                        module.getModuleId()
+                                .equals(
+                                        alarm.getModuleId()
+                                )
         );
+    }
+
+
+    // =========================================
+    // Total Alarm Count
+    // =========================================
+
+    public int getTotalAlarms() {
+
+        return alarmHistory.size();
+    }
+
+
+    // =========================================
+    // Active Alarm Count
+    // =========================================
+
+    public int getActiveAlarmCount() {
+
+        return (int)
+
+                alarmHistory
+
+                        .stream()
+
+                        .filter(
+                                alarm ->
+                                        alarm.getStatus()
+                                                == AlarmStatus.ACTIVE
+                        )
+
+                        .count();
+    }
+
+
+    // =========================================
+    // Check Similar Active Alarm
+    // =========================================
+
+    public boolean hasSimilarActiveAlarm(
+
+            String moduleId,
+
+            AlarmType alarmType
+    ) {
+
+        if (
+                moduleId == null
+                        || alarmType == null
+        ) {
+
+            return false;
+        }
+
+
+        return alarmHistory
+
+                .stream()
+
+                .anyMatch(
+
+                        alarm ->
+
+                                moduleId.equals(
+                                        alarm.getModuleId()
+                                )
+
+                                        && alarm.getType()
+                                        == alarmType
+
+                                        && alarm.getStatus()
+                                        == AlarmStatus.ACTIVE
+                );
     }
 }

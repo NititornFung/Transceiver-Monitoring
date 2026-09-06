@@ -2,11 +2,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -19,36 +21,49 @@ import java.util.List;
 public class AlarmHistoryWindow {
 
 
-    // =========================================
-    // SERVICE
-    // =========================================
+    // =====================================================
+    // SERVICES
+    // =====================================================
 
     private final AlarmHistoryService alarmHistoryService;
 
 
-    // =========================================
+    // =====================================================
+    // MODULES
+    // =====================================================
+
+    private final List<Transceiver> modules;
+
+
+    // =====================================================
     // TABLE
-    // =========================================
+    // =====================================================
 
     private TableView<AlarmRecord> table;
 
 
-    // =========================================
+    // =====================================================
     // CONSTRUCTOR
-    // =========================================
+    // =====================================================
 
     public AlarmHistoryWindow(
-            AlarmHistoryService alarmHistoryService
+
+            AlarmHistoryService alarmHistoryService,
+
+            List<Transceiver> modules
     ) {
 
         this.alarmHistoryService =
                 alarmHistoryService;
+
+        this.modules =
+                modules;
     }
 
 
-    // =========================================
+    // =====================================================
     // SHOW WINDOW
-    // =========================================
+    // =====================================================
 
     public void show() {
 
@@ -57,9 +72,9 @@ public class AlarmHistoryWindow {
                 new Stage();
 
 
-        // =====================================
+        // =================================================
         // ROOT
-        // =====================================
+        // =================================================
 
         BorderPane root =
                 new BorderPane();
@@ -73,57 +88,47 @@ public class AlarmHistoryWindow {
         );
 
 
-        // =====================================
+        // =================================================
         // HEADER
-        // =====================================
-
-        VBox header =
-                createHeader();
-
+        // =================================================
 
         root.setTop(
-                header
+                createHeader()
         );
 
 
-        // =====================================
+        // =================================================
         // TABLE
-        // =====================================
+        // =================================================
 
         table =
-                createAlarmTable();
-
-
-        loadAlarmData();
-
+                createTable();
 
         root.setCenter(
                 table
         );
 
 
-        // =====================================
-        // BUTTON PANEL
-        // =====================================
-
-        HBox buttonPanel =
-                createButtonPanel();
-
+        // =================================================
+        // BOTTOM PANEL
+        // =================================================
 
         root.setBottom(
-                buttonPanel
+                createBottomPanel(
+                        stage
+                )
         );
 
 
-        // =====================================
+        // =================================================
         // SCENE
-        // =====================================
+        // =================================================
 
         Scene scene =
                 new Scene(
                         root,
-                        1200,
-                        650
+                        1250,
+                        700
                 );
 
 
@@ -131,19 +136,24 @@ public class AlarmHistoryWindow {
                 "Alarm History"
         );
 
-
         stage.setScene(
                 scene
         );
 
-
         stage.show();
+
+
+        // =================================================
+        // LOAD DATA
+        // =================================================
+
+        loadHistory();
     }
 
 
-    // =========================================
-    // HEADER
-    // =========================================
+    // =====================================================
+    // CREATE HEADER
+    // =====================================================
 
     private VBox createHeader() {
 
@@ -152,7 +162,6 @@ public class AlarmHistoryWindow {
                 new Label(
                         "🚨 ALARM HISTORY"
                 );
-
 
         title.setStyle(
                 "-fx-font-size: 26px;"
@@ -163,12 +172,11 @@ public class AlarmHistoryWindow {
 
         Label subtitle =
                 new Label(
-                        "Alarm Events and Monitoring History"
+                        "Historical alarm records from monitoring and test operations"
                 );
 
-
         subtitle.setStyle(
-                "-fx-font-size: 14px;"
+                "-fx-font-size: 13px;"
                         + "-fx-text-fill: #7f8c8d;"
         );
 
@@ -195,37 +203,47 @@ public class AlarmHistoryWindow {
     }
 
 
-    // =========================================
+    // =====================================================
     // CREATE TABLE
-    // =========================================
+    // =====================================================
 
-    private TableView<AlarmRecord> createAlarmTable() {
+    private TableView<AlarmRecord> createTable() {
 
 
         TableView<AlarmRecord> alarmTable =
                 new TableView<>();
 
 
-        alarmTable.setColumnResizePolicy(
-                TableView.CONSTRAINED_RESIZE_POLICY
-        );
-
-
-        // =====================================
+        // =================================================
         // TIME COLUMN
-        // =====================================
+        // =================================================
 
-        TableColumn<
-                AlarmRecord,
-                String
-                > timeColumn =
+        TableColumn<AlarmRecord, String> timeColumn =
                 new TableColumn<>(
-                        "TIME"
+                        "Time"
                 );
 
 
+        timeColumn.setPrefWidth(
+                180
+        );
+
+
         timeColumn.setCellValueFactory(
-                data -> {
+
+                cellData -> {
+
+                    if (
+                            cellData.getValue()
+                                    .getTimestamp()
+                                    == null
+                    ) {
+
+                        return new SimpleStringProperty(
+                                ""
+                        );
+                    }
+
 
                     DateTimeFormatter formatter =
                             DateTimeFormatter.ofPattern(
@@ -235,293 +253,218 @@ public class AlarmHistoryWindow {
 
                     return new SimpleStringProperty(
 
-                            data.getValue()
+                            cellData.getValue()
                                     .getTimestamp()
-                                    .format(formatter)
+                                    .format(
+                                            formatter
+                                    )
                     );
                 }
         );
 
 
-        // =====================================
-        // MODULE COLUMN
-        // =====================================
+        // =================================================
+        // MODULE ID COLUMN
+        // =================================================
 
-        TableColumn<
-                AlarmRecord,
-                String
-                > moduleColumn =
+        TableColumn<AlarmRecord, String> moduleColumn =
                 new TableColumn<>(
-                        "MODULE"
+                        "Module ID"
                 );
+
+
+        moduleColumn.setPrefWidth(
+                100
+        );
 
 
         moduleColumn.setCellValueFactory(
-                data ->
-
-                        new SimpleStringProperty(
-
-                                data.getValue()
-                                        .getModuleId()
-                        )
+                new PropertyValueFactory<>(
+                        "moduleId"
+                )
         );
 
 
-        // =====================================
-        // TYPE COLUMN
-        // =====================================
+        // =================================================
+        // ALARM TYPE COLUMN
+        // =================================================
 
-        TableColumn<
-                AlarmRecord,
-                String
-                > typeColumn =
+        TableColumn<AlarmRecord, String> typeColumn =
                 new TableColumn<>(
-                        "ALARM TYPE"
+                        "Alarm Type"
                 );
+
+
+        typeColumn.setPrefWidth(
+                150
+        );
 
 
         typeColumn.setCellValueFactory(
-                data ->
 
-                        new SimpleStringProperty(
+                cellData -> {
 
-                                data.getValue()
-                                        .getType()
-                                        .toString()
-                        )
+                    AlarmType type =
+                            cellData.getValue()
+                                    .getType();
+
+
+                    String value =
+                            type != null
+                                    ? type.toString()
+                                    : "";
+
+
+                    return new SimpleStringProperty(
+                            value
+                    );
+                }
         );
 
 
-        // =====================================
+        // =================================================
         // SEVERITY COLUMN
-        // =====================================
+        // =================================================
 
-        TableColumn<
-                AlarmRecord,
-                String
-                > severityColumn =
+        TableColumn<AlarmRecord, String> severityColumn =
                 new TableColumn<>(
-                        "SEVERITY"
+                        "Severity"
                 );
+
+
+        severityColumn.setPrefWidth(
+                100
+        );
 
 
         severityColumn.setCellValueFactory(
-                data -> {
+
+                cellData -> {
 
                     AlarmSeverity severity =
-                            data.getValue()
+                            cellData.getValue()
                                     .getSeverity();
 
 
-                    String display;
-
-
-                    if (severity == AlarmSeverity.CRITICAL) {
-
-                        display =
-                                "🔴 CRITICAL";
-
-                    }
-
-                    else {
-
-                        display =
-                                "🟠 WARNING";
-                    }
+                    String value =
+                            severity != null
+                                    ? severity.toString()
+                                    : "";
 
 
                     return new SimpleStringProperty(
-                            display
+                            value
                     );
                 }
         );
 
 
-        // =====================================
-        // SOURCE COLUMN
-        // =====================================
-
-        TableColumn<
-                AlarmRecord,
-                String
-                > sourceColumn =
-                new TableColumn<>(
-                        "SOURCE"
-                );
-
-
-        sourceColumn.setCellValueFactory(
-                data -> {
-
-                    AlarmSource source =
-                            data.getValue()
-                                    .getSource();
-
-
-                    String display;
-
-
-                    if (source == AlarmSource.TEST) {
-
-                        display =
-                                "🧪 TEST";
-
-                    }
-
-                    else {
-
-                        display =
-                                "🔴 REAL";
-                    }
-
-
-                    return new SimpleStringProperty(
-                            display
-                    );
-                }
-        );
-
-
-        // =====================================
+        // =================================================
         // MESSAGE COLUMN
-        // =====================================
+        // =================================================
 
-        TableColumn<
-                AlarmRecord,
-                String
-                > messageColumn =
+        TableColumn<AlarmRecord, String> messageColumn =
                 new TableColumn<>(
-                        "MESSAGE"
+                        "Message"
                 );
+
+
+        messageColumn.setPrefWidth(
+                280
+        );
 
 
         messageColumn.setCellValueFactory(
-                data ->
-
-                        new SimpleStringProperty(
-
-                                data.getValue()
-                                        .getMessage()
-                        )
+                new PropertyValueFactory<>(
+                        "message"
+                )
         );
 
 
-        // =====================================
+        // =================================================
         // ACTUAL VALUE COLUMN
-        // =====================================
+        // =================================================
 
-        TableColumn<
-                AlarmRecord,
-                String
-                > actualValueColumn =
+        TableColumn<AlarmRecord, Double> actualValueColumn =
                 new TableColumn<>(
-                        "ACTUAL"
+                        "Actual Value"
                 );
+
+
+        actualValueColumn.setPrefWidth(
+                110
+        );
 
 
         actualValueColumn.setCellValueFactory(
-                data ->
-
-                        new SimpleStringProperty(
-
-                                String.format(
-
-                                        "%.2f",
-
-                                        data.getValue()
-                                                .getActualValue()
-                                )
-                        )
+                new PropertyValueFactory<>(
+                        "actualValue"
+                )
         );
 
 
-        // =====================================
+        // =================================================
         // THRESHOLD COLUMN
-        // =====================================
+        // =================================================
 
-        TableColumn<
-                AlarmRecord,
-                String
-                > thresholdColumn =
+        TableColumn<AlarmRecord, Double> thresholdColumn =
                 new TableColumn<>(
-                        "THRESHOLD"
+                        "Threshold"
                 );
+
+
+        thresholdColumn.setPrefWidth(
+                100
+        );
 
 
         thresholdColumn.setCellValueFactory(
-                data ->
-
-                        new SimpleStringProperty(
-
-                                String.format(
-
-                                        "%.2f",
-
-                                        data.getValue()
-                                                .getThreshold()
-                                )
-                        )
+                new PropertyValueFactory<>(
+                        "threshold"
+                )
         );
 
 
-        // =====================================
-        // STATUS COLUMN
-        // =====================================
+        // =================================================
+        // SOURCE COLUMN
+        // =================================================
 
-        TableColumn<
-                AlarmRecord,
-                String
-                > statusColumn =
+        TableColumn<AlarmRecord, String> sourceColumn =
                 new TableColumn<>(
-                        "STATUS"
+                        "Source"
                 );
 
 
-        statusColumn.setCellValueFactory(
-                data -> {
-
-                    AlarmStatus status =
-                            data.getValue()
-                                    .getStatus();
+        sourceColumn.setPrefWidth(
+                120
+        );
 
 
-                    String display;
+        sourceColumn.setCellValueFactory(
+
+                cellData -> {
+
+                    AlarmSource source =
+                            cellData.getValue()
+                                    .getSource();
 
 
-                    if (status == AlarmStatus.ACTIVE) {
-
-                        display =
-                                "🔴 ACTIVE";
-
-                    }
-
-                    else if (
-                            status
-                                    == AlarmStatus.ACKNOWLEDGED
-                    ) {
-
-                        display =
-                                "🟡 ACKNOWLEDGED";
-
-                    }
-
-                    else {
-
-                        display =
-                                "🟢 CLEARED";
-                    }
+                    String value =
+                            source != null
+                                    ? source.toString()
+                                    : "";
 
 
                     return new SimpleStringProperty(
-                            display
+                            value
                     );
                 }
         );
 
 
-        // =====================================
+        // =================================================
         // ADD COLUMNS
-        // =====================================
+        // =================================================
 
         alarmTable.getColumns().addAll(
 
@@ -533,15 +476,13 @@ public class AlarmHistoryWindow {
 
                 severityColumn,
 
-                sourceColumn,
-
                 messageColumn,
 
                 actualValueColumn,
 
                 thresholdColumn,
 
-                statusColumn
+                sourceColumn
         );
 
 
@@ -549,35 +490,13 @@ public class AlarmHistoryWindow {
     }
 
 
-    // =========================================
-    // LOAD ALARM DATA
-    // =========================================
+    // =====================================================
+    // CREATE BOTTOM PANEL
+    // =====================================================
 
-    private void loadAlarmData() {
-
-
-        List<AlarmRecord> alarmList =
-                alarmHistoryService
-                        .getAllAlarmHistory();
-
-
-        ObservableList<AlarmRecord> data =
-                FXCollections.observableArrayList(
-                        alarmList
-                );
-
-
-        table.setItems(
-                data
-        );
-    }
-
-
-    // =========================================
-    // BUTTON PANEL
-    // =========================================
-
-    private HBox createButtonPanel() {
+    private HBox createBottomPanel(
+            Stage stage
+    ) {
 
 
         Button refreshButton =
@@ -586,15 +505,9 @@ public class AlarmHistoryWindow {
                 );
 
 
-        Button acknowledgeButton =
+        Button exportButton =
                 new Button(
-                        "✓ Acknowledge"
-                );
-
-
-        Button clearButton =
-                new Button(
-                        "Clear Alarm"
+                        "📁 Export CSV"
                 );
 
 
@@ -605,9 +518,9 @@ public class AlarmHistoryWindow {
 
 
         String buttonStyle =
-                "-fx-font-size: 13px;"
+                "-fx-font-size: 14px;"
                         + "-fx-font-weight: bold;"
-                        + "-fx-padding: 10 15;"
+                        + "-fx-padding: 10 18;"
                         + "-fx-background-radius: 8;"
                         + "-fx-cursor: hand;"
                         + "-fx-background-color: white;"
@@ -619,11 +532,7 @@ public class AlarmHistoryWindow {
                 buttonStyle
         );
 
-        acknowledgeButton.setStyle(
-                buttonStyle
-        );
-
-        clearButton.setStyle(
+        exportButton.setStyle(
                 buttonStyle
         );
 
@@ -632,63 +541,37 @@ public class AlarmHistoryWindow {
         );
 
 
-        // =====================================
-        // REFRESH
-        // =====================================
+        // =================================================
+        // BUTTON ACTIONS
+        // =================================================
 
         refreshButton.setOnAction(
-                event -> loadAlarmData()
+                event -> loadHistory()
         );
 
 
-        // =====================================
-        // ACKNOWLEDGE
-        // =====================================
-
-        acknowledgeButton.setOnAction(
-                event -> acknowledgeSelectedAlarm()
+        exportButton.setOnAction(
+                event -> openExportWindow()
         );
 
-
-        // =====================================
-        // CLEAR
-        // =====================================
-
-        clearButton.setOnAction(
-                event -> clearSelectedAlarm()
-        );
-
-
-        // =====================================
-        // CLOSE
-        // =====================================
 
         closeButton.setOnAction(
-                event -> {
-
-                    Stage stage =
-                            (Stage) closeButton
-                                    .getScene()
-                                    .getWindow();
-
-
-                    stage.close();
-                }
+                event -> stage.close()
         );
 
 
         HBox panel =
                 new HBox(
                         10,
-
                         refreshButton,
-
-                        acknowledgeButton,
-
-                        clearButton,
-
+                        exportButton,
                         closeButton
                 );
+
+
+        panel.setAlignment(
+                Pos.CENTER_RIGHT
+        );
 
 
         panel.setPadding(
@@ -705,52 +588,54 @@ public class AlarmHistoryWindow {
     }
 
 
-    // =========================================
-    // ACKNOWLEDGE SELECTED ALARM
-    // =========================================
+    // =====================================================
+    // LOAD HISTORY
+    // =====================================================
 
-    private void acknowledgeSelectedAlarm() {
-
-
-        AlarmRecord selectedAlarm =
-                table.getSelectionModel()
-                        .getSelectedItem();
+    private void loadHistory() {
 
 
-        if (selectedAlarm == null) {
+        if (alarmHistoryService == null) {
 
             return;
         }
 
 
-        selectedAlarm.acknowledge();
+        List<AlarmRecord> history =
+
+                alarmHistoryService
+                        .getAllAlarmHistory();
 
 
-        table.refresh();
+        ObservableList<AlarmRecord> data =
+
+                FXCollections.observableArrayList(
+                        history
+                );
+
+
+        table.setItems(
+                data
+        );
     }
 
 
-    // =========================================
-    // CLEAR SELECTED ALARM
-    // =========================================
+    // =====================================================
+    // OPEN EXPORT WINDOW
+    // =====================================================
 
-    private void clearSelectedAlarm() {
-
-
-        AlarmRecord selectedAlarm =
-                table.getSelectionModel()
-                        .getSelectedItem();
+    private void openExportWindow() {
 
 
-        if (selectedAlarm == null) {
+        ExportAlarmHistoryWindow exportWindow =
+                new ExportAlarmHistoryWindow(
 
-            return;
-        }
+                        alarmHistoryService,
+
+                        modules
+                );
 
 
-        selectedAlarm.clear();
-
-
-        table.refresh();
+        exportWindow.show();
     }
 }
