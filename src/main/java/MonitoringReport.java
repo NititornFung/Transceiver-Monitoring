@@ -1,15 +1,14 @@
 import java.util.List;
 
+
 public class MonitoringReport {
 
-    private Transceiver module;
-    private String status;
-    private List<Alarm> alarms;
+    private final Transceiver module;
 
+    private final String status;
 
-    // =================================
-    // Constructor
-    // =================================
+    private final List<Alarm> alarms;
+
 
     public MonitoringReport(
             Transceiver module,
@@ -18,14 +17,12 @@ public class MonitoringReport {
     ) {
 
         this.module = module;
+
         this.status = status;
+
         this.alarms = alarms;
     }
 
-
-    // =================================
-    // Getter
-    // =================================
 
     public Transceiver getModule() {
 

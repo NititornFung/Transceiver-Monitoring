@@ -76,6 +76,19 @@ public class DashboardApplication extends Application {
 
 
     // =====================================================
+    // DASHBOARD SUMMARY
+    // =====================================================
+
+    private Label totalModulesValue;
+
+    private Label normalModulesValue;
+
+    private Label activeAlarmsValue;
+
+    private Label totalAlarmsValue;
+
+
+    // =====================================================
     // ALARM PANEL
     // =====================================================
 
@@ -100,10 +113,41 @@ public class DashboardApplication extends Application {
 
 
     // =====================================================
+    // CHART AXIS
+    // =====================================================
+
+    private NumberAxis voltageXAxis;
+
+    private NumberAxis wavelengthXAxis;
+
+
+    // =====================================================
+    // MONITORING CONTROL
+    // =====================================================
+
+    private Timeline monitoringTimeline;
+
+    private Label monitoringStatusLabel;
+
+    private Button startButton;
+
+    private Button stopButton;
+
+
+    // =====================================================
     // TIME
     // =====================================================
 
-    private int time = 0;
+    private int time =
+            0;
+
+
+    // =====================================================
+    // CHART SETTINGS
+    // =====================================================
+
+    private static final int MAX_DATA_POINTS =
+            30;
 
 
     // =====================================================
@@ -129,22 +173,33 @@ public class DashboardApplication extends Application {
         // =================================================
 
         modules.add(
+
                 new Transceiver(
+
                         "TX001",
+
                         "400G COSA"
                 )
         );
 
+
         modules.add(
+
                 new Transceiver(
+
                         "TX002",
+
                         "800G COSAz"
                 )
         );
 
+
         modules.add(
+
                 new Transceiver(
+
                         "TX003",
+
                         "800G SR8"
                 )
         );
@@ -170,10 +225,15 @@ public class DashboardApplication extends Application {
                 new VBox(20);
 
         content.setPadding(
+
                 new Insets(
+
                         25,
+
                         40,
+
                         40,
+
                         40
                 )
         );
@@ -184,6 +244,7 @@ public class DashboardApplication extends Application {
         // =================================================
 
         content.getChildren().add(
+
                 createHeader()
         );
 
@@ -193,7 +254,18 @@ public class DashboardApplication extends Application {
         // =================================================
 
         content.getChildren().add(
+
                 createControlPanel()
+        );
+
+
+        // =================================================
+        // DASHBOARD SUMMARY
+        // =================================================
+
+        content.getChildren().add(
+
+                createDashboardSummary()
         );
 
 
@@ -202,13 +274,18 @@ public class DashboardApplication extends Application {
         // =================================================
 
         Label moduleTitle =
-                new Label("MODULE STATUS");
+                new Label(
+                        "MODULE STATUS"
+                );
+
 
         moduleTitle.setStyle(
+
                 "-fx-font-size: 20px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #2c3e50;"
         );
+
 
         content.getChildren().add(
                 moduleTitle
@@ -222,22 +299,40 @@ public class DashboardApplication extends Application {
         HBox cardsContainer =
                 new HBox(20);
 
+
         cardsContainer.setAlignment(
                 Pos.CENTER
         );
 
-        for (int i = 0; i < modules.size(); i++) {
+
+        for (
+
+                int i = 0;
+
+                i < modules.size();
+
+                i++
+        ) {
+
 
             VBox card =
                     createModuleCard(
+
                             modules.get(i),
+
                             i
                     );
 
-            moduleCards[i] = card;
 
-            cardsContainer.getChildren().add(card);
+            moduleCards[i] =
+                    card;
+
+
+            cardsContainer.getChildren().add(
+                    card
+            );
         }
+
 
         content.getChildren().add(
                 cardsContainer
@@ -249,6 +344,7 @@ public class DashboardApplication extends Application {
         // =================================================
 
         content.getChildren().add(
+
                 createAlarmPanel()
         );
 
@@ -258,6 +354,7 @@ public class DashboardApplication extends Application {
         // =================================================
 
         content.getChildren().add(
+
                 createVoltageChart()
         );
 
@@ -267,6 +364,7 @@ public class DashboardApplication extends Application {
         // =================================================
 
         content.getChildren().add(
+
                 createWavelengthChart()
         );
 
@@ -276,6 +374,7 @@ public class DashboardApplication extends Application {
         // =================================================
 
         content.getChildren().add(
+
                 createSpectrumChart()
         );
 
@@ -286,15 +385,22 @@ public class DashboardApplication extends Application {
 
         Label footer =
                 new Label(
-                        "Optical Transceiver Monitoring System | Real-Time Telemetry Dashboard"
+
+                        "Optical Transceiver Monitoring System | "
+                                + "Real-Time Telemetry Dashboard"
                 );
 
+
         footer.setStyle(
+
                 "-fx-font-size: 12px;"
                         + "-fx-text-fill: #7f8c8d;"
         );
 
-        content.getChildren().add(footer);
+
+        content.getChildren().add(
+                footer
+        );
 
 
         // =================================================
@@ -304,17 +410,30 @@ public class DashboardApplication extends Application {
         ScrollPane scrollPane =
                 new ScrollPane();
 
-        scrollPane.setContent(content);
 
-        scrollPane.setFitToWidth(true);
+        scrollPane.setContent(
+                content
+        );
 
-        scrollPane.setPannable(true);
+
+        scrollPane.setFitToWidth(
+                true
+        );
+
+
+        scrollPane.setPannable(
+                true
+        );
+
 
         scrollPane.setVbarPolicy(
+
                 ScrollPane.ScrollBarPolicy.AS_NEEDED
         );
 
+
         scrollPane.setHbarPolicy(
+
                 ScrollPane.ScrollBarPolicy.NEVER
         );
 
@@ -323,7 +442,9 @@ public class DashboardApplication extends Application {
         // SET ROOT
         // =================================================
 
-        root.setCenter(scrollPane);
+        root.setCenter(
+                scrollPane
+        );
 
 
         // =================================================
@@ -332,29 +453,51 @@ public class DashboardApplication extends Application {
 
         Scene scene =
                 new Scene(
+
                         root,
+
                         1400,
+
                         900
                 );
 
+
         stage.setTitle(
+
                 "Optical Transceiver Monitoring System"
         );
 
-        stage.setMinWidth(1100);
 
-        stage.setMinHeight(750);
+        stage.setMinWidth(
+                1100
+        );
 
-        stage.setScene(scene);
+
+        stage.setMinHeight(
+                750
+        );
+
+
+        stage.setScene(
+                scene
+        );
+
 
         stage.show();
 
 
         // =================================================
-        // START REAL-TIME MONITORING
+        // CREATE MONITORING TIMELINE
         // =================================================
 
         startRealTimeMonitoring();
+
+
+        // =================================================
+        // INITIAL SUMMARY
+        // =================================================
+
+        updateDashboardSummary();
     }
 
 
@@ -367,10 +510,13 @@ public class DashboardApplication extends Application {
 
         Label title =
                 new Label(
+
                         "OPTICAL TRANSCEIVER MONITORING SYSTEM"
                 );
 
+
         title.setStyle(
+
                 "-fx-font-size: 30px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #1f2d3d;"
@@ -379,18 +525,24 @@ public class DashboardApplication extends Application {
 
         Label subtitle =
                 new Label(
+
                         "Real-Time Monitoring, Diagnostics and Alarm Management Platform"
                 );
 
+
         subtitle.setStyle(
+
                 "-fx-font-size: 14px;"
                         + "-fx-text-fill: #7f8c8d;"
         );
 
 
         return new VBox(
+
                 5,
+
                 title,
+
                 subtitle
         );
     }
@@ -400,26 +552,58 @@ public class DashboardApplication extends Application {
     // CONTROL PANEL
     // =====================================================
 
-    private HBox createControlPanel() {
+    private VBox createControlPanel() {
+
+
+        // =================================================
+        // BUTTONS
+        // =================================================
+
+        startButton =
+                new Button(
+                        "▶ START MONITORING"
+                );
+
+
+        stopButton =
+                new Button(
+                        "⏸ STOP MONITORING"
+                );
+
+
+        Button refreshButton =
+                new Button(
+                        "🔄 REFRESH NOW"
+                );
 
 
         Button testModeButton =
-                new Button("🧪 Test Mode");
+                new Button(
+                        "🧪 TEST MODE"
+                );
+
 
         Button monitoringHistoryButton =
-                new Button("📊 Monitoring History");
+                new Button(
+                        "📊 MONITORING HISTORY"
+                );
+
 
         Button alarmHistoryButton =
-                new Button("🚨 Alarm History");
+                new Button(
+                        "🚨 ALARM HISTORY"
+                );
 
-        Button refreshButton =
-                new Button("🔄 Refresh Now");
 
+        // =================================================
+        // BUTTON STYLE
+        // =================================================
 
-        String buttonStyle =
-                "-fx-font-size: 14px;"
+        String normalButtonStyle =
+
+                "-fx-font-size: 13px;"
                         + "-fx-font-weight: bold;"
-                        + "-fx-padding: 10 18;"
+                        + "-fx-padding: 10 16;"
                         + "-fx-background-radius: 8;"
                         + "-fx-cursor: hand;"
                         + "-fx-background-color: white;"
@@ -427,15 +611,99 @@ public class DashboardApplication extends Application {
                         + "-fx-border-radius: 8;";
 
 
-        testModeButton.setStyle(buttonStyle);
-        monitoringHistoryButton.setStyle(buttonStyle);
-        alarmHistoryButton.setStyle(buttonStyle);
-        refreshButton.setStyle(buttonStyle);
+        String startButtonStyle =
+
+                "-fx-font-size: 13px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-padding: 10 16;"
+                        + "-fx-background-radius: 8;"
+                        + "-fx-cursor: hand;"
+                        + "-fx-background-color: #27ae60;"
+                        + "-fx-text-fill: white;";
 
 
-        // ===============================================
+        String stopButtonStyle =
+
+                "-fx-font-size: 13px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-padding: 10 16;"
+                        + "-fx-background-radius: 8;"
+                        + "-fx-cursor: hand;"
+                        + "-fx-background-color: #e74c3c;"
+                        + "-fx-text-fill: white;";
+
+
+        startButton.setStyle(
+                startButtonStyle
+        );
+
+        stopButton.setStyle(
+                stopButtonStyle
+        );
+
+        refreshButton.setStyle(
+                normalButtonStyle
+        );
+
+        testModeButton.setStyle(
+                normalButtonStyle
+        );
+
+        monitoringHistoryButton.setStyle(
+                normalButtonStyle
+        );
+
+        alarmHistoryButton.setStyle(
+                normalButtonStyle
+        );
+
+
+        // =================================================
+        // INITIAL STATE
+        // =================================================
+
+        startButton.setDisable(
+                false
+        );
+
+        stopButton.setDisable(
+                true
+        );
+
+
+        // =================================================
+        // STATUS
+        // =================================================
+
+        monitoringStatusLabel =
+                new Label(
+                        "● MONITORING STOPPED"
+                );
+
+
+        monitoringStatusLabel.setStyle(
+
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #e74c3c;"
+        );
+
+
+        // =================================================
         // BUTTON ACTIONS
-        // ===============================================
+        // =================================================
+
+        startButton.setOnAction(
+                event -> startMonitoring()
+        );
+
+        stopButton.setOnAction(
+                event -> stopMonitoring()
+        );
+
+        refreshButton.setOnAction(
+                event -> refreshDashboard()
+        );
 
         testModeButton.setOnAction(
                 event -> openTestMode()
@@ -449,25 +717,357 @@ public class DashboardApplication extends Application {
                 event -> openAlarmHistory()
         );
 
-        refreshButton.setOnAction(
-                event -> updateDashboard()
-        );
 
+        // =================================================
+        // BUTTON PANEL
+        // =================================================
 
-        HBox controlPanel =
+        HBox buttonPanel =
                 new HBox(
+
                         12,
+
+                        startButton,
+
+                        stopButton,
+
+                        refreshButton,
+
                         testModeButton,
+
                         monitoringHistoryButton,
-                        alarmHistoryButton,
-                        refreshButton
+
+                        alarmHistoryButton
                 );
 
-        controlPanel.setAlignment(
+
+        buttonPanel.setAlignment(
                 Pos.CENTER_LEFT
         );
 
-        return controlPanel;
+
+        return new VBox(
+
+                10,
+
+                buttonPanel,
+
+                monitoringStatusLabel
+        );
+    }
+
+
+    // =====================================================
+    // DASHBOARD SUMMARY
+    // =====================================================
+
+    private VBox createDashboardSummary() {
+
+
+        Label title =
+                new Label(
+                        "DASHBOARD SUMMARY"
+                );
+
+
+        title.setStyle(
+
+                "-fx-font-size: 20px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #2c3e50;"
+        );
+
+
+        // =================================================
+        // TOTAL MODULES
+        // =================================================
+
+        totalModulesValue =
+                new Label(
+                        String.valueOf(
+                                modules.size()
+                        )
+                );
+
+
+        VBox totalModulesCard =
+                createSummaryCard(
+
+                        "TOTAL MODULES",
+
+                        totalModulesValue,
+
+                        "#3498db"
+                );
+
+
+        // =================================================
+        // NORMAL MODULES
+        // =================================================
+
+        normalModulesValue =
+                new Label(
+                        "0"
+                );
+
+
+        VBox normalModulesCard =
+                createSummaryCard(
+
+                        "NORMAL MODULES",
+
+                        normalModulesValue,
+
+                        "#27ae60"
+                );
+
+
+        // =================================================
+        // ACTIVE ALARMS
+        // =================================================
+
+        activeAlarmsValue =
+                new Label(
+                        "0"
+                );
+
+
+        VBox activeAlarmCard =
+                createSummaryCard(
+
+                        "ACTIVE ALARMS",
+
+                        activeAlarmsValue,
+
+                        "#e74c3c"
+                );
+
+
+        // =================================================
+        // TOTAL ALARMS
+        // =================================================
+
+        totalAlarmsValue =
+                new Label(
+                        "0"
+                );
+
+
+        VBox totalAlarmCard =
+                createSummaryCard(
+
+                        "TOTAL ALARMS",
+
+                        totalAlarmsValue,
+
+                        "#f39c12"
+                );
+
+
+        // =================================================
+        // CONTAINER
+        // =================================================
+
+        HBox summaryContainer =
+                new HBox(
+
+                        20,
+
+                        totalModulesCard,
+
+                        normalModulesCard,
+
+                        activeAlarmCard,
+
+                        totalAlarmCard
+                );
+
+
+        summaryContainer.setAlignment(
+                Pos.CENTER_LEFT
+        );
+
+
+        return new VBox(
+
+                12,
+
+                title,
+
+                summaryContainer
+        );
+    }
+
+
+    // =====================================================
+    // CREATE SUMMARY CARD
+    // =====================================================
+
+    private VBox createSummaryCard(
+
+            String titleText,
+
+            Label valueLabel,
+
+            String color
+    ) {
+
+
+        Label title =
+                new Label(
+                        titleText
+                );
+
+
+        title.setStyle(
+
+                "-fx-font-size: 12px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #7f8c8d;"
+        );
+
+
+        valueLabel.setStyle(
+
+                "-fx-font-size: 32px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: "
+                        + color
+                        + ";"
+        );
+
+
+        VBox card =
+                new VBox(
+
+                        8,
+
+                        title,
+
+                        valueLabel
+                );
+
+
+        card.setPadding(
+                new Insets(20)
+        );
+
+
+        card.setPrefWidth(
+                220
+        );
+
+
+        card.setPrefHeight(
+                110
+        );
+
+
+        card.setAlignment(
+                Pos.CENTER_LEFT
+        );
+
+
+        card.setStyle(
+
+                "-fx-background-color: white;"
+                        + "-fx-border-color: #dcdde1;"
+                        + "-fx-border-radius: 12;"
+                        + "-fx-background-radius: 12;"
+                        + "-fx-border-width: 1;"
+        );
+
+
+        return card;
+    }
+
+
+    // =====================================================
+    // UPDATE DASHBOARD SUMMARY
+    // =====================================================
+
+    private void updateDashboardSummary() {
+
+
+        // =================================================
+        // TOTAL MODULES
+        // =================================================
+
+        totalModulesValue.setText(
+
+                String.valueOf(
+                        modules.size()
+                )
+        );
+
+
+        // =================================================
+        // NORMAL MODULES
+        // =================================================
+
+        int normalCount =
+                0;
+
+
+        for (Transceiver module : modules) {
+
+            if (module.getTelemetry() == null) {
+
+                continue;
+            }
+
+
+            MonitoringReport report =
+                    monitoringService.monitor(
+                            module
+                    );
+
+
+            if (
+                    report.getStatus()
+                            .toString()
+                            .equals("NORMAL")
+            ) {
+
+                normalCount++;
+            }
+        }
+
+
+        normalModulesValue.setText(
+
+                String.valueOf(
+                        normalCount
+                )
+        );
+
+
+        // =================================================
+        // ACTIVE ALARMS
+        // =================================================
+
+        activeAlarmsValue.setText(
+
+                String.valueOf(
+
+                        alarmHistoryService
+                                .getActiveAlarmCount()
+                )
+        );
+
+
+        // =================================================
+        // TOTAL ALARMS
+        // =================================================
+
+        totalAlarmsValue.setText(
+
+                String.valueOf(
+
+                        alarmHistoryService
+                                .getTotalAlarms()
+                )
+        );
     }
 
 
@@ -489,7 +1089,7 @@ public class DashboardApplication extends Application {
 
                         alarmHistoryService,
 
-                        this::updateDashboard
+                        this::refreshDashboard
                 );
 
 
@@ -542,7 +1142,9 @@ public class DashboardApplication extends Application {
     // =====================================================
 
     private VBox createModuleCard(
+
             Transceiver module,
+
             int index
     ) {
 
@@ -550,15 +1152,24 @@ public class DashboardApplication extends Application {
         VBox card =
                 new VBox(10);
 
+
         card.setPadding(
                 new Insets(18)
         );
 
-        card.setPrefWidth(380);
 
-        card.setMinWidth(300);
+        card.setPrefWidth(
+                380
+        );
+
+
+        card.setMinWidth(
+                300
+        );
+
 
         card.setStyle(
+
                 "-fx-background-color: white;"
                         + "-fx-border-color: #dcdde1;"
                         + "-fx-border-radius: 12;"
@@ -566,48 +1177,68 @@ public class DashboardApplication extends Application {
         );
 
 
+        // =================================================
+        // MODULE ID
+        // =================================================
+
         Label moduleId =
                 new Label(
                         module.getModuleId()
                 );
 
+
         moduleId.setStyle(
+
                 "-fx-font-size: 22px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #2c3e50;"
         );
 
 
+        // =================================================
+        // MODEL
+        // =================================================
+
         Label model =
                 new Label(
                         module.getModel()
                 );
 
+
         model.setStyle(
+
                 "-fx-font-size: 13px;"
                         + "-fx-text-fill: #7f8c8d;"
         );
 
+
+        // =================================================
+        // TELEMETRY LABELS
+        // =================================================
 
         temperatureLabels[index] =
                 new Label(
                         "🌡 Temperature: -- °C"
                 );
 
+
         voltageLabels[index] =
                 new Label(
                         "⚡ Voltage: -- V"
                 );
+
 
         rxPowerLabels[index] =
                 new Label(
                         "📥 RX Power: -- dBm"
                 );
 
+
         txPowerLabels[index] =
                 new Label(
                         "📤 TX Power: -- dBm"
                 );
+
 
         wavelengthLabels[index] =
                 new Label(
@@ -618,9 +1249,13 @@ public class DashboardApplication extends Application {
         Label[] telemetryLabels = {
 
                 temperatureLabels[index],
+
                 voltageLabels[index],
+
                 rxPowerLabels[index],
+
                 txPowerLabels[index],
+
                 wavelengthLabels[index]
         };
 
@@ -628,21 +1263,34 @@ public class DashboardApplication extends Application {
         for (Label label : telemetryLabels) {
 
             label.setStyle(
+
                     "-fx-font-size: 14px;"
                             + "-fx-text-fill: #34495e;"
             );
         }
 
 
+        // =================================================
+        // STATUS
+        // =================================================
+
         statusLabels[index] =
-                new Label("● WAITING");
+                new Label(
+                        "● WAITING"
+                );
+
 
         statusLabels[index].setStyle(
+
                 "-fx-font-size: 15px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #7f8c8d;"
         );
 
+
+        // =================================================
+        // ADD COMPONENTS
+        // =================================================
 
         card.getChildren().addAll(
 
@@ -682,11 +1330,14 @@ public class DashboardApplication extends Application {
         alarmPanel =
                 new VBox(10);
 
+
         alarmPanel.setPadding(
                 new Insets(18)
         );
 
+
         alarmPanel.setStyle(
+
                 "-fx-background-color: white;"
                         + "-fx-border-color: #dcdde1;"
                         + "-fx-border-radius: 12;"
@@ -695,9 +1346,13 @@ public class DashboardApplication extends Application {
 
 
         Label title =
-                new Label("🚨 ACTIVE ALARMS");
+                new Label(
+                        "🚨 ACTIVE ALARMS"
+                );
+
 
         title.setStyle(
+
                 "-fx-font-size: 20px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #2c3e50;"
@@ -705,9 +1360,13 @@ public class DashboardApplication extends Application {
 
 
         alarmMessageLabel =
-                new Label("✓ No Active Alarm");
+                new Label(
+                        "✓ No Active Alarm"
+                );
+
 
         alarmMessageLabel.setStyle(
+
                 "-fx-font-size: 15px;"
                         + "-fx-font-weight: bold;"
                         + "-fx-text-fill: #27ae60;"
@@ -735,8 +1394,23 @@ public class DashboardApplication extends Application {
     private LineChart<Number, Number> createVoltageChart() {
 
 
-        NumberAxis xAxis =
-                new NumberAxis();
+        voltageXAxis =
+                new NumberAxis(
+                        0,
+                        MAX_DATA_POINTS,
+                        5
+                );
+
+
+        voltageXAxis.setAutoRanging(
+                false
+        );
+
+
+        voltageXAxis.setLabel(
+                "Time (Seconds)"
+        );
+
 
         NumberAxis yAxis =
                 new NumberAxis(
@@ -746,14 +1420,21 @@ public class DashboardApplication extends Application {
                 );
 
 
-        xAxis.setLabel("Time");
+        yAxis.setAutoRanging(
+                false
+        );
 
-        yAxis.setLabel("Voltage (V)");
+
+        yAxis.setLabel(
+                "Voltage (V)"
+        );
 
 
         LineChart<Number, Number> chart =
                 new LineChart<>(
-                        xAxis,
+
+                        voltageXAxis,
+
                         yAxis
                 );
 
@@ -762,27 +1443,44 @@ public class DashboardApplication extends Application {
                 "⚡ REAL-TIME VOLTAGE MONITORING"
         );
 
-        chart.setAnimated(false);
 
-        chart.setPrefHeight(350);
+        chart.setAnimated(
+                false
+        );
+
+
+        chart.setCreateSymbols(
+                false
+        );
+
+
+        chart.setPrefHeight(
+                350
+        );
 
 
         voltageSeries1 =
                 new XYChart.Series<>();
 
-        voltageSeries1.setName("TX001");
+        voltageSeries1.setName(
+                "TX001"
+        );
 
 
         voltageSeries2 =
                 new XYChart.Series<>();
 
-        voltageSeries2.setName("TX002");
+        voltageSeries2.setName(
+                "TX002"
+        );
 
 
         voltageSeries3 =
                 new XYChart.Series<>();
 
-        voltageSeries3.setName("TX003");
+        voltageSeries3.setName(
+                "TX003"
+        );
 
 
         chart.getData().addAll(
@@ -806,8 +1504,23 @@ public class DashboardApplication extends Application {
     private LineChart<Number, Number> createWavelengthChart() {
 
 
-        NumberAxis xAxis =
-                new NumberAxis();
+        wavelengthXAxis =
+                new NumberAxis(
+                        0,
+                        MAX_DATA_POINTS,
+                        5
+                );
+
+
+        wavelengthXAxis.setAutoRanging(
+                false
+        );
+
+
+        wavelengthXAxis.setLabel(
+                "Time (Seconds)"
+        );
+
 
         NumberAxis yAxis =
                 new NumberAxis(
@@ -817,14 +1530,21 @@ public class DashboardApplication extends Application {
                 );
 
 
-        xAxis.setLabel("Time");
+        yAxis.setAutoRanging(
+                false
+        );
 
-        yAxis.setLabel("Wavelength (nm)");
+
+        yAxis.setLabel(
+                "Wavelength (nm)"
+        );
 
 
         LineChart<Number, Number> chart =
                 new LineChart<>(
-                        xAxis,
+
+                        wavelengthXAxis,
+
                         yAxis
                 );
 
@@ -833,27 +1553,44 @@ public class DashboardApplication extends Application {
                 "📡 REAL-TIME CENTER WAVELENGTH"
         );
 
-        chart.setAnimated(false);
 
-        chart.setPrefHeight(350);
+        chart.setAnimated(
+                false
+        );
+
+
+        chart.setCreateSymbols(
+                false
+        );
+
+
+        chart.setPrefHeight(
+                350
+        );
 
 
         wavelengthSeries1 =
                 new XYChart.Series<>();
 
-        wavelengthSeries1.setName("TX001");
+        wavelengthSeries1.setName(
+                "TX001"
+        );
 
 
         wavelengthSeries2 =
                 new XYChart.Series<>();
 
-        wavelengthSeries2.setName("TX002");
+        wavelengthSeries2.setName(
+                "TX002"
+        );
 
 
         wavelengthSeries3 =
                 new XYChart.Series<>();
 
-        wavelengthSeries3.setName("TX003");
+        wavelengthSeries3.setName(
+                "TX003"
+        );
 
 
         chart.getData().addAll(
@@ -884,6 +1621,17 @@ public class DashboardApplication extends Application {
                         5
                 );
 
+
+        xAxis.setAutoRanging(
+                false
+        );
+
+
+        xAxis.setLabel(
+                "Wavelength (nm)"
+        );
+
+
         NumberAxis yAxis =
                 new NumberAxis(
                         -60,
@@ -892,9 +1640,10 @@ public class DashboardApplication extends Application {
                 );
 
 
-        xAxis.setLabel(
-                "Wavelength (nm)"
+        yAxis.setAutoRanging(
+                false
         );
+
 
         yAxis.setLabel(
                 "Optical Power (dBm)"
@@ -903,7 +1652,9 @@ public class DashboardApplication extends Application {
 
         LineChart<Number, Number> chart =
                 new LineChart<>(
+
                         xAxis,
+
                         yAxis
                 );
 
@@ -912,13 +1663,25 @@ public class DashboardApplication extends Application {
                 "🔬 OPTICAL SPECTRUM ANALYZER"
         );
 
-        chart.setAnimated(false);
 
-        chart.setPrefHeight(400);
+        chart.setAnimated(
+                false
+        );
+
+
+        chart.setCreateSymbols(
+                false
+        );
+
+
+        chart.setPrefHeight(
+                400
+        );
 
 
         spectrumSeries =
                 new XYChart.Series<>();
+
 
         spectrumSeries.setName(
                 "Optical Spectrum"
@@ -935,13 +1698,13 @@ public class DashboardApplication extends Application {
 
 
     // =====================================================
-    // REAL-TIME MONITORING
+    // CREATE MONITORING TIMELINE
     // =====================================================
 
     private void startRealTimeMonitoring() {
 
 
-        Timeline timeline =
+        monitoringTimeline =
                 new Timeline(
 
                         new KeyFrame(
@@ -953,11 +1716,101 @@ public class DashboardApplication extends Application {
                 );
 
 
-        timeline.setCycleCount(
+        monitoringTimeline.setCycleCount(
                 Timeline.INDEFINITE
         );
+    }
 
-        timeline.play();
+
+    // =====================================================
+    // START MONITORING
+    // =====================================================
+
+    private void startMonitoring() {
+
+
+        if (monitoringTimeline == null) {
+
+            startRealTimeMonitoring();
+        }
+
+
+        monitoringTimeline.play();
+
+
+        startButton.setDisable(
+                true
+        );
+
+
+        stopButton.setDisable(
+                false
+        );
+
+
+        monitoringStatusLabel.setText(
+                "● MONITORING RUNNING"
+        );
+
+
+        monitoringStatusLabel.setStyle(
+
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #27ae60;"
+        );
+
+
+        // First update immediately
+
+        updateDashboard();
+    }
+
+
+    // =====================================================
+    // STOP MONITORING
+    // =====================================================
+
+    private void stopMonitoring() {
+
+
+        if (monitoringTimeline != null) {
+
+            monitoringTimeline.stop();
+        }
+
+
+        startButton.setDisable(
+                false
+        );
+
+
+        stopButton.setDisable(
+                true
+        );
+
+
+        monitoringStatusLabel.setText(
+                "● MONITORING STOPPED"
+        );
+
+
+        monitoringStatusLabel.setStyle(
+
+                "-fx-font-size: 14px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-text-fill: #e74c3c;"
+        );
+    }
+
+
+    // =====================================================
+    // REFRESH DASHBOARD
+    // =====================================================
+
+    private void refreshDashboard() {
+
+        updateDashboard();
     }
 
 
@@ -974,11 +1827,23 @@ public class DashboardApplication extends Application {
         boolean hasAlarm =
                 false;
 
+
         StringBuilder alarmText =
                 new StringBuilder();
 
 
-        for (int i = 0; i < modules.size(); i++) {
+        // =================================================
+        // LOOP MODULES
+        // =================================================
+
+        for (
+
+                int i = 0;
+
+                i < modules.size();
+
+                i++
+        ) {
 
 
             Transceiver module =
@@ -991,6 +1856,7 @@ public class DashboardApplication extends Application {
 
             Telemetry telemetry =
                     simulator.generateTelemetry(
+
                             module.getModel()
                     );
 
@@ -1015,10 +1881,79 @@ public class DashboardApplication extends Application {
             // =============================================
 
             monitoringHistoryService.addHistory(
+
                     module,
+
                     telemetry,
-                    report.getStatus().toString()
+
+                    report
             );
+
+
+            // =============================================
+            // SAVE ALARM HISTORY
+            // =============================================
+
+            if (
+
+                    report.getAlarms() != null
+
+                            &&
+
+                            !report.getAlarms().isEmpty()
+
+            ) {
+
+
+                for (
+
+                        Alarm alarm :
+
+                        report.getAlarms()
+
+                ) {
+
+
+                    if (
+
+                            !alarmHistoryService
+                                    .hasSimilarActiveAlarm(
+
+                                            module.getModuleId(),
+
+                                            alarm.getType()
+                                    )
+
+                    ) {
+
+
+                        AlarmRecord alarmRecord =
+                                new AlarmRecord(
+
+                                        module.getModuleId(),
+
+                                        java.time.LocalDateTime.now(),
+
+                                        alarm.getType(),
+
+                                        alarm.getSeverity(),
+
+                                        alarm.getMessage(),
+
+                                        alarm.getActualValue(),
+
+                                        alarm.getThreshold(),
+
+                                        AlarmSource.MONITORING
+                                );
+
+
+                        alarmHistoryService.addAlarm(
+                                alarmRecord
+                        );
+                    }
+                }
+            }
 
 
             // =============================================
@@ -1026,8 +1961,11 @@ public class DashboardApplication extends Application {
             // =============================================
 
             updateCard(
+
                     i,
+
                     module,
+
                     report
             );
 
@@ -1037,7 +1975,9 @@ public class DashboardApplication extends Application {
             // =============================================
 
             updateVoltageGraph(
+
                     i,
+
                     telemetry.getVoltage()
             );
 
@@ -1047,7 +1987,9 @@ public class DashboardApplication extends Application {
             // =============================================
 
             updateWavelengthGraph(
+
                     i,
+
                     telemetry.getWavelength()
             );
 
@@ -1056,12 +1998,13 @@ public class DashboardApplication extends Application {
             // CHECK ALARM
             // =============================================
 
-            String status =
-                    report.getStatus()
-                            .toString();
+            if (
 
+                    !report.getStatus()
+                            .toString()
+                            .equals("NORMAL")
 
-            if (!status.equals("NORMAL")) {
+            ) {
 
 
                 hasAlarm =
@@ -1072,32 +2015,80 @@ public class DashboardApplication extends Application {
                         "⚠ "
                 );
 
+
                 alarmText.append(
                         module.getModuleId()
                 );
+
 
                 alarmText.append(
                         " | "
                 );
 
-                alarmText.append(
-                        status
-                );
 
-                alarmText.append(
-                        "\n"
-                );
+                for (
+
+                        Alarm alarm :
+
+                        report.getAlarms()
+
+                ) {
+
+
+                    alarmText.append(
+
+                            alarm.getType()
+                    );
+
+
+                    alarmText.append(
+                            ": "
+                    );
+
+
+                    alarmText.append(
+
+                            String.format(
+
+                                    "%.2f",
+
+                                    alarm.getActualValue()
+                            )
+                    );
+
+
+                    alarmText.append(
+                            "\n"
+                    );
+                }
             }
         }
 
 
+        // =================================================
+        // UPDATE ALARM PANEL
+        // =================================================
+
         updateAlarmPanel(
+
                 hasAlarm,
+
                 alarmText.toString()
         );
 
 
+        // =================================================
+        // UPDATE SPECTRUM
+        // =================================================
+
         updateSpectrum();
+
+
+        // =================================================
+        // UPDATE DASHBOARD SUMMARY
+        // =================================================
+
+        updateDashboardSummary();
     }
 
 
@@ -1175,8 +2166,7 @@ public class DashboardApplication extends Application {
 
 
         String status =
-                report.getStatus()
-                        .toString();
+                report.getStatus().toString();
 
 
         if (status.equals("NORMAL")) {
@@ -1188,6 +2178,7 @@ public class DashboardApplication extends Application {
 
 
             statusLabels[index].setStyle(
+
                     "-fx-font-size: 15px;"
                             + "-fx-font-weight: bold;"
                             + "-fx-text-fill: #27ae60;"
@@ -1195,6 +2186,7 @@ public class DashboardApplication extends Application {
 
 
             moduleCards[index].setStyle(
+
                     "-fx-background-color: white;"
                             + "-fx-border-color: #dcdde1;"
                             + "-fx-border-radius: 12;"
@@ -1211,6 +2203,7 @@ public class DashboardApplication extends Application {
 
 
             statusLabels[index].setStyle(
+
                     "-fx-font-size: 15px;"
                             + "-fx-font-weight: bold;"
                             + "-fx-text-fill: #e74c3c;"
@@ -1218,6 +2211,7 @@ public class DashboardApplication extends Application {
 
 
             moduleCards[index].setStyle(
+
                     "-fx-background-color: #fff5f5;"
                             + "-fx-border-color: #e74c3c;"
                             + "-fx-border-width: 2;"
@@ -1249,6 +2243,7 @@ public class DashboardApplication extends Application {
 
 
             alarmMessageLabel.setStyle(
+
                     "-fx-font-size: 15px;"
                             + "-fx-font-weight: bold;"
                             + "-fx-text-fill: #e74c3c;"
@@ -1256,6 +2251,7 @@ public class DashboardApplication extends Application {
 
 
             alarmPanel.setStyle(
+
                     "-fx-background-color: #fff5f5;"
                             + "-fx-border-color: #e74c3c;"
                             + "-fx-border-width: 2;"
@@ -1273,6 +2269,7 @@ public class DashboardApplication extends Application {
 
 
             alarmMessageLabel.setStyle(
+
                     "-fx-font-size: 15px;"
                             + "-fx-font-weight: bold;"
                             + "-fx-text-fill: #27ae60;"
@@ -1280,6 +2277,7 @@ public class DashboardApplication extends Application {
 
 
             alarmPanel.setStyle(
+
                     "-fx-background-color: white;"
                             + "-fx-border-color: #dcdde1;"
                             + "-fx-border-radius: 12;"
@@ -1334,9 +2332,57 @@ public class DashboardApplication extends Application {
         );
 
 
-        if (series.getData().size() > 30) {
+        if (
 
-            series.getData().remove(0);
+                series.getData().size()
+
+                        >
+
+                        MAX_DATA_POINTS
+
+        ) {
+
+            series.getData().removeFirst();
+        }
+
+
+        updateVoltageXAxis();
+    }
+
+
+    // =====================================================
+    // UPDATE VOLTAGE X AXIS
+    // =====================================================
+
+    private void updateVoltageXAxis() {
+
+
+        if (time <= MAX_DATA_POINTS) {
+
+
+            voltageXAxis.setLowerBound(
+                    0
+            );
+
+
+            voltageXAxis.setUpperBound(
+                    MAX_DATA_POINTS
+            );
+        }
+
+        else {
+
+
+            voltageXAxis.setLowerBound(
+
+                    time - MAX_DATA_POINTS
+            );
+
+
+            voltageXAxis.setUpperBound(
+
+                    time + 1
+            );
         }
     }
 
@@ -1386,9 +2432,57 @@ public class DashboardApplication extends Application {
         );
 
 
-        if (series.getData().size() > 30) {
+        if (
 
-            series.getData().remove(0);
+                series.getData().size()
+
+                        >
+
+                        MAX_DATA_POINTS
+
+        ) {
+
+            series.getData().removeFirst();
+        }
+
+
+        updateWavelengthXAxis();
+    }
+
+
+    // =====================================================
+    // UPDATE WAVELENGTH X AXIS
+    // =====================================================
+
+    private void updateWavelengthXAxis() {
+
+
+        if (time <= MAX_DATA_POINTS) {
+
+
+            wavelengthXAxis.setLowerBound(
+                    0
+            );
+
+
+            wavelengthXAxis.setUpperBound(
+                    MAX_DATA_POINTS
+            );
+        }
+
+        else {
+
+
+            wavelengthXAxis.setLowerBound(
+
+                    time - MAX_DATA_POINTS
+            );
+
+
+            wavelengthXAxis.setUpperBound(
+
+                    time + 1
+            );
         }
     }
 
@@ -1404,8 +2498,12 @@ public class DashboardApplication extends Application {
 
 
         double centerWavelength =
+
                 1310
-                        + (Math.random() * 2 - 1);
+                        + (
+                        Math.random() * 2
+                                - 1
+                );
 
 
         for (
@@ -1419,22 +2517,28 @@ public class DashboardApplication extends Application {
 
 
             double distance =
+
                     wavelength
                             - centerWavelength;
 
 
             double mainPeak =
+
                     -(distance * distance);
 
 
             double noise =
+
                     -55
                             + Math.random() * 5;
 
 
             double power =
+
                     Math.max(
+
                             mainPeak,
+
                             noise
                     );
 

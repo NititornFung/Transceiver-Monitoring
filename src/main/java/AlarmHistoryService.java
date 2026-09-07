@@ -16,7 +16,7 @@ public class AlarmHistoryService {
 
 
     // =========================================
-    // Add Single Alarm
+    // Add Single Alarm Record
     // =========================================
 
     public void addAlarm(
@@ -24,11 +24,78 @@ public class AlarmHistoryService {
     ) {
 
         if (alarm == null) {
+
             return;
         }
 
+
         alarmHistory.add(
                 alarm
+        );
+    }
+
+
+    // =========================================
+    // Add Alarm From Monitoring
+    // =========================================
+
+    public void addHistory(
+            Transceiver module,
+            Alarm alarm
+    ) {
+
+        if (module == null || alarm == null) {
+
+            return;
+        }
+
+
+        // =====================================
+        // Prevent Duplicate Active Alarm
+        // =====================================
+
+        if (
+                hasSimilarActiveAlarm(
+                        module.getModuleId(),
+                        alarm.getType()
+                )
+        ) {
+
+            return;
+        }
+
+
+        // =====================================
+        // Create Alarm Record
+        // =====================================
+
+        AlarmRecord record =
+                new AlarmRecord(
+
+                        module.getModuleId(),
+
+                        LocalDateTime.now(),
+
+                        alarm.getType(),
+
+                        alarm.getSeverity(),
+
+                        alarm.getMessage(),
+
+                        alarm.getActualValue(),
+
+                        alarm.getThreshold(),
+
+                        AlarmSource.MONITORING
+                );
+
+
+        // =====================================
+        // Save Alarm
+        // =====================================
+
+        alarmHistory.add(
+                record
         );
     }
 
@@ -46,6 +113,7 @@ public class AlarmHistoryService {
                 alarms == null
                         || alarms.isEmpty()
         ) {
+
             return;
         }
 
@@ -99,10 +167,12 @@ public class AlarmHistoryService {
 
 
         return alarmHistory
+
                 .stream()
 
                 .filter(
                         alarm ->
+
                                 module.getModuleId()
                                         .equals(
                                                 alarm.getModuleId()
@@ -144,10 +214,13 @@ public class AlarmHistoryService {
 
 
         return alarmHistory
+
                 .stream()
 
                 .filter(
+
                         alarm ->
+
                                 moduleId.equals(
                                         alarm.getModuleId()
                                 )
@@ -444,7 +517,9 @@ public class AlarmHistoryService {
                 .stream()
 
                 .filter(
+
                         alarm ->
+
                                 alarm.getStatus()
                                         == AlarmStatus.ACTIVE
                 )
@@ -474,7 +549,9 @@ public class AlarmHistoryService {
                 .stream()
 
                 .filter(
+
                         alarm ->
+
                                 alarm.getType()
                                         == type
                 )
@@ -504,7 +581,9 @@ public class AlarmHistoryService {
                 .stream()
 
                 .filter(
+
                         alarm ->
+
                                 alarm.getSeverity()
                                         == severity
                 )
@@ -534,7 +613,9 @@ public class AlarmHistoryService {
                 .stream()
 
                 .filter(
+
                         alarm ->
+
                                 alarm.getSource()
                                         == source
                 )
@@ -547,8 +628,6 @@ public class AlarmHistoryService {
 
     // =========================================
     // Acknowledge Alarm
-    //
-    // Uses AlarmStatus enum
     // =========================================
 
     public boolean acknowledgeAlarm(
@@ -640,8 +719,11 @@ public class AlarmHistoryService {
         for (AlarmRecord alarm : alarmHistory) {
 
             if (
+
                     alarm != null
+
                             && alarm.getStatus()
+
                             == AlarmStatus.ACTIVE
             ) {
 
@@ -710,8 +792,11 @@ public class AlarmHistoryService {
                         .stream()
 
                         .filter(
+
                                 alarm ->
+
                                         alarm.getStatus()
+
                                                 == AlarmStatus.ACTIVE
                         )
 
@@ -731,7 +816,9 @@ public class AlarmHistoryService {
     ) {
 
         if (
+
                 moduleId == null
+
                         || alarmType == null
         ) {
 

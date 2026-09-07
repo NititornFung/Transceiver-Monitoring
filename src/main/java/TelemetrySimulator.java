@@ -5,14 +5,15 @@ public class TelemetrySimulator {
 
 
     // =========================================
-    // Random Generator
+    // RANDOM
     // =========================================
 
-    private final Random random;
+    private final Random random =
+            new Random();
 
 
     // =========================================
-    // Current Simulated Values
+    // CURRENT VALUES
     // =========================================
 
     private double temperature;
@@ -29,17 +30,20 @@ public class TelemetrySimulator {
 
 
     // =========================================
-    // Constructor
+    // ALARM SIMULATION
+    // =========================================
+
+    private int alarmDuration = 0;
+
+    private int alarmType = 0;
+
+
+    // =========================================
+    // DEFAULT CONSTRUCTOR
+    // รองรับ Main.java เวอร์ชันเดิม
     // =========================================
 
     public TelemetrySimulator() {
-
-        random = new Random();
-
-
-        // =========================================
-        // Initial Values
-        // =========================================
 
         temperature = 45.0;
 
@@ -56,13 +60,48 @@ public class TelemetrySimulator {
 
 
     // =========================================
-    // Generate Complete Telemetry
+    // MODEL CONSTRUCTOR
+    // รองรับ DashboardApplication
+    // =========================================
+
+    public TelemetrySimulator(
+            String model
+    ) {
+
+        temperature = 45.0;
+
+        voltage = 3.30;
+
+        txPower = -2.0;
+
+        rxPower = -4.0;
+
+        laserCurrent = 50.0;
+
+        wavelength =
+                getBaseWavelength(model);
+    }
+
+
+    // =========================================
+    // GENERATE COMPLETE TELEMETRY
     // =========================================
 
     public Telemetry generateTelemetry(
             String model
     ) {
 
+
+        // =====================================
+        // CHECK ALARM EVENT
+        // =====================================
+
+        generateAlarmEvent();
+
+
+        // =====================================
+        // GENERATE NORMAL VALUES
+        // =====================================
 
         temperature =
                 generateTemperature();
@@ -80,168 +119,317 @@ public class TelemetrySimulator {
                 generateLaserCurrent();
 
         wavelength =
-                generateWavelength(
-                        model
-                );
+                generateWavelength(model);
 
+
+        // =====================================
+        // APPLY ALARM
+        // =====================================
+
+        applyAlarm(model);
+
+
+        // =====================================
+        // RETURN TELEMETRY
+        // =====================================
 
         return new Telemetry(
+
                 wavelength,
+
                 temperature,
+
                 voltage,
+
                 txPower,
+
                 rxPower,
+
                 laserCurrent
         );
     }
 
 
     // =========================================
-    // Generate Temperature
+    // GENERATE RANDOM ALARM EVENT
     // =========================================
 
-    public double generateTemperature() {
+    private void generateAlarmEvent() {
+
+
+        // =====================================
+        // ALARM CURRENTLY ACTIVE
+        // =====================================
+
+        if (alarmDuration > 0) {
+
+            alarmDuration--;
+
+            return;
+        }
+
+
+        // =====================================
+        // RANDOM CHANCE
+        // 1 ใน 20 รอบ
+        // =====================================
+
+        int chance =
+                random.nextInt(20);
+
+
+        if (chance == 0) {
+
+
+            // =================================
+            // SELECT ALARM TYPE
+            // =================================
+
+            alarmType =
+                    random.nextInt(5) + 1;
+
+
+            // =================================
+            // ALARM DURATION
+            // 2 - 4 รอบ
+            // =================================
+
+            alarmDuration =
+                    random.nextInt(3) + 2;
+        }
+    }
+
+
+    // =========================================
+    // APPLY ALARM
+    // =========================================
+
+    private void applyAlarm(
+            String model
+    ) {
+
+
+        if (alarmDuration <= 0) {
+
+            return;
+        }
+
+
+        switch (alarmType) {
+
+
+            // =================================
+            // HIGH TEMPERATURE
+            // =================================
+
+            case 1 ->
+
+                    temperature =
+                            90.0
+                                    + random.nextDouble() * 5.0;
+
+
+            // =================================
+            // LOW VOLTAGE
+            // =================================
+
+            case 2 ->
+
+                    voltage =
+                            2.8
+                                    + random.nextDouble() * 0.1;
+
+
+            // =================================
+            // LOW RX POWER
+            // =================================
+
+            case 3 ->
+
+                    rxPower =
+                            -12.0
+                                    - random.nextDouble() * 3.0;
+
+
+            // =================================
+            // HIGH LASER CURRENT
+            // =================================
+
+            case 4 ->
+
+                    laserCurrent =
+                            105.0
+                                    + random.nextDouble() * 10.0;
+
+
+            // =================================
+            // WAVELENGTH SHIFT
+            // =================================
+
+            case 5 -> {
+
+
+                double base =
+                        getBaseWavelength(model);
+
+
+                wavelength =
+                        base + 5.0;
+            }
+        }
+    }
+
+
+    // =========================================
+    // GENERATE TEMPERATURE
+    // =========================================
+
+    private double generateTemperature() {
+
 
         double change =
-                random.nextDouble() * 2 - 1;
+                random.nextDouble() * 1.5
+                        - 0.75;
 
 
         temperature += change;
 
 
-        temperature =
-                limit(
-                        temperature,
-                        30.0,
-                        95.0
-                );
+        return limit(
 
+                temperature,
 
-        return temperature;
+                35.0,
+
+                75.0
+        );
     }
 
 
     // =========================================
-    // Generate Voltage
+    // GENERATE VOLTAGE
     // =========================================
 
-    public double generateVoltage() {
+    private double generateVoltage() {
+
 
         double change =
-                random.nextDouble() * 0.02 - 0.01;
+                random.nextDouble() * 0.01
+                        - 0.005;
 
 
         voltage += change;
 
 
-        voltage =
-                limit(
-                        voltage,
-                        3.0,
-                        3.6
-                );
+        return limit(
 
+                voltage,
 
-        return voltage;
+                3.15,
+
+                3.45
+        );
     }
 
 
     // =========================================
-    // Generate TX Power
+    // GENERATE TX POWER
     // =========================================
 
-    public double generateTxPower() {
+    private double generateTxPower() {
+
 
         double change =
-                random.nextDouble() * 0.4 - 0.2;
+                random.nextDouble() * 0.2
+                        - 0.1;
 
 
         txPower += change;
 
 
-        txPower =
-                limit(
-                        txPower,
-                        -5.0,
-                        1.0
-                );
+        return limit(
 
+                txPower,
 
-        return txPower;
+                -4.0,
+
+                0.0
+        );
     }
 
 
     // =========================================
-    // Generate RX Power
+    // GENERATE RX POWER
     // =========================================
 
-    public double generateRxPower() {
+    private double generateRxPower() {
+
 
         double change =
-                random.nextDouble() * 0.4 - 0.2;
+                random.nextDouble() * 0.2
+                        - 0.1;
 
 
         rxPower += change;
 
 
-        rxPower =
-                limit(
-                        rxPower,
-                        -15.0,
-                        1.0
-                );
+        return limit(
 
+                rxPower,
 
-        return rxPower;
+                -8.0,
+
+                -2.0
+        );
     }
 
 
     // =========================================
-    // Generate Laser Current
+    // GENERATE LASER CURRENT
     // =========================================
 
-    public double generateLaserCurrent() {
+    private double generateLaserCurrent() {
+
 
         double change =
-                random.nextDouble() * 2 - 1;
+                random.nextDouble() * 1.0
+                        - 0.5;
 
 
         laserCurrent += change;
 
 
-        laserCurrent =
-                limit(
-                        laserCurrent,
-                        10.0,
-                        100.0
-                );
+        return limit(
 
+                laserCurrent,
 
-        return laserCurrent;
+                30.0,
+
+                80.0
+        );
     }
 
 
     // =========================================
-    // Generate Wavelength
+    // GENERATE WAVELENGTH
     // =========================================
 
-    public double generateWavelength(
+    private double generateWavelength(
             String model
     ) {
 
 
-        double baseWavelength =
-                getBaseWavelength(
-                        model
-                );
+        double base =
+                getBaseWavelength(model);
 
 
         double change =
-                random.nextDouble() * 0.1 - 0.05;
+                random.nextDouble() * 0.04
+                        - 0.02;
 
 
         wavelength =
-                baseWavelength + change;
+                base + change;
 
 
         return wavelength;
@@ -249,12 +437,13 @@ public class TelemetrySimulator {
 
 
     // =========================================
-    // Get Base Wavelength
+    // GET BASE WAVELENGTH
     // =========================================
 
     private double getBaseWavelength(
             String model
     ) {
+
 
         if (model.equals("400G COSA")) {
 
@@ -279,14 +468,18 @@ public class TelemetrySimulator {
 
 
     // =========================================
-    // Limit Value
+    // LIMIT VALUE
     // =========================================
 
     private double limit(
+
             double value,
+
             double min,
+
             double max
     ) {
+
 
         if (value < min) {
 
